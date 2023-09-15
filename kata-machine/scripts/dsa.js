@@ -211,18 +211,18 @@ module.exports = {
         "return": "void",
     },
 
-    DijkstraList: {
-        type: "fn",
-        fn: "dijkstra_list",
-        args: "source: number, sink: number, arr: WeightedAdjacencyList",
-        "return": "number[]",
-    },
-
     PrimsList: {
         type: "fn",
         fn: "prims",
         args: "list: WeightedAdjacencyList",
         return: "WeightedAdjacencyList | null",
+    },
+
+    DijkstraList: {
+        type: "fn",
+        fn: "dijkstra_list",
+        args: "source: number, sink: number, arr: WeightedAdjacencyList",
+        "return": "number[]",
     },
 
     BinarySearchList: {
