@@ -20,6 +20,12 @@ func (l *SinglyLinkedList) Prepend(v interface{}) error {
 	if l.Length == 0 {
 		return l.Append(v)
 	}
+	l.Length++
+	n := &Node{
+		Next:  l.Head,
+		Value: v,
+	}
+	l.Head = n
 	return nil
 }
 
@@ -59,10 +65,6 @@ func (l *SinglyLinkedList) Get(idx int) (*Node, error) {
 		}
 	}
 	return n, nil
-}
-
-func (l *SinglyLinkedList) RemoveAt(idx int) interface{} {
-	return nil
 }
 
 func (l *SinglyLinkedList) DumpInfo() {
