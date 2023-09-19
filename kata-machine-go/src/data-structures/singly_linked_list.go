@@ -16,7 +16,7 @@ type SinglyLinkedList struct {
 	Length int   `json:"length"`
 }
 
-func (l *SinglyLinkedList) Prepend(v interface{}) error {
+func (l *SinglyLinkedList) Prepend(v interface{}) (*Node, error) {
 	if l.Length == 0 {
 		return l.Append(v)
 	}
@@ -26,10 +26,10 @@ func (l *SinglyLinkedList) Prepend(v interface{}) error {
 		Value: v,
 	}
 	l.Head = n
-	return nil
+	return n, nil
 }
 
-func (l *SinglyLinkedList) Append(v interface{}) error {
+func (l *SinglyLinkedList) Append(v interface{}) (*Node, error) {
 	n := &Node{
 		Next:  nil,
 		Value: v,
@@ -42,10 +42,17 @@ func (l *SinglyLinkedList) Append(v interface{}) error {
 		l.Tail = n
 	}
 	l.Length++
-	return nil
+	return n, nil
 }
 
 func (l *SinglyLinkedList) Insert(v interface{}, idx int) (*Node, error) {
+	if l.Length == 0 || idx == l.Length-1 {
+		return l.Append(v)
+	}
+	if idx == 0 {
+		return l.Prepend(v)
+	}
+	// TODO(nick): finish this
 	return nil, nil
 }
 
