@@ -39,7 +39,7 @@ func TestTwoSumFast(t *testing.T) {
 }
 
 func TestThreeSumSlow(t *testing.T) {
-	testInput := []int{-2, 0, 1, 1, 2, 3}
+	testInput := []int{0, 1, -1, -10, 10}
 	expectedOutput := 2
 	output := ThreeSumSlow(testInput)
 	if output != expectedOutput {
@@ -48,7 +48,7 @@ func TestThreeSumSlow(t *testing.T) {
 }
 
 func TestThreeSumFast(t *testing.T) {
-	testInput := []int{-2, 0, 1, 1, 2, 3}
+	testInput := []int{-10, -1, 0, 1, 10}
 	expectedOutput := 2
 	output := ThreeSumFast(testInput)
 	if output != expectedOutput {
