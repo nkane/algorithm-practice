@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// TODO(nick):
+// - implemented weighted path compression
+
 type UnionDataType string
 
 var (
@@ -95,6 +98,7 @@ func (quf *QuickUnionFind) Connected(p int, q int) bool {
 }
 
 func (quf *QuickUnionFind) Find(p int) int {
+	// find component name
 	for p != quf.IDs[p] {
 		p = quf.IDs[p]
 	}
@@ -102,7 +106,7 @@ func (quf *QuickUnionFind) Find(p int) int {
 }
 
 func (quf *QuickUnionFind) Union(p int, q int) {
-	// put p and q into the same component
+	// give p and q the same root
 	pID := quf.Find(p)
 	qID := quf.Find(q)
 	if pID == qID {
