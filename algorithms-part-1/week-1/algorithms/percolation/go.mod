@@ -1,4 +1,4 @@
-module algorithms
+module percolation
 
 go 1.21.1
 
