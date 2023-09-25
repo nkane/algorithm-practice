@@ -29,6 +29,9 @@ type Cell struct {
 }
 
 type State struct {
+	MinN       int
+	MaxN       int
+	N          int32
 	CellWidth  int32
 	CellHeight int32
 }
@@ -42,7 +45,10 @@ type Game struct {
 func CreateGame(n int32, w *Window) *Game {
 	g := Game{
 		Window: w,
-		State:  State{},
+		State: State{
+			MinN: 5,
+			N:    n,
+		},
 	}
 	g.InitializeGrid(n)
 	return &g
@@ -64,11 +70,13 @@ func (g *Game) InitializeGrid(n int32) {
 	}
 }
 
-func (g *Game) Update() {
-	// TODO
-}
-
 func (g *Game) Render() {
+	// render GUI
+	if gui.Spinner(rl.NewRectangle(50, 10, 150, 25), "N Value", &g.State.N, g.State.MinN, g.State.MaxN, false) {
+		log.Printf("reinit grid\n")
+		g.InitializeGrid(g.State.N)
+	}
+	// render grid
 	for column := 0; column < len(g.Grid); column++ {
 		for row := 0; row < len(g.Grid[column]); row++ {
 			g.Grid[column][row].Draw(g.State.CellWidth, g.State.CellHeight, g.Window.Width/2)
@@ -101,12 +109,7 @@ func main() {
 		rl.BeginDrawing()
 		{
 			rl.ClearBackground(rl.RayWhite)
-			game.Update()
 			game.Render()
-			if gui.Spinner(rl.NewRectangle(50, 10, 150, 25), "N Value", &n, 5, 20, false) {
-				log.Printf("reinit grid\n")
-				game.InitializeGrid(n)
-			}
 		}
 		rl.EndDrawing()
 	}
