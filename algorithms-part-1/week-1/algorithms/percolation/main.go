@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -31,6 +32,7 @@ type Cell struct {
 type State struct {
 	MinN       int
 	MaxN       int
+	OpenSites  int32
 	N          int32
 	CellWidth  int32
 	CellHeight int32
@@ -46,8 +48,10 @@ func CreateGame(n int32, w *Window) *Game {
 	g := Game{
 		Window: w,
 		State: State{
-			MinN: 5,
-			N:    n,
+			MinN:      5,
+			MaxN:      20,
+			N:         n,
+			OpenSites: 0,
 		},
 	}
 	g.InitializeGrid(n)
@@ -64,7 +68,7 @@ func (g *Game) InitializeGrid(n int32) {
 			g.Grid[column][row] = Cell{
 				X:    column,
 				Y:    row,
-				Open: true,
+				Open: false,
 			}
 		}
 	}
@@ -72,9 +76,24 @@ func (g *Game) InitializeGrid(n int32) {
 
 func (g *Game) Render() {
 	// render GUI
-	if gui.Spinner(rl.NewRectangle(50, 10, 150, 25), "N Value", &g.State.N, g.State.MinN, g.State.MaxN, false) {
+	if gui.Spinner(rl.NewRectangle(150, 10, 150, 25), "N Value", &g.State.N, g.State.MinN, g.State.MaxN, false) {
 		log.Printf("reinit grid\n")
 		g.InitializeGrid(g.State.N)
+	}
+	if gui.Spinner(rl.NewRectangle(150, 50, 150, 25),
+		"Open Sites",
+		&g.State.OpenSites,
+		int(g.State.OpenSites),
+		int(g.State.N*g.State.N), false) {
+		log.Printf("creating open site")
+		for {
+			x := rand.Intn(int(g.State.N))
+			y := rand.Intn(int(g.State.N))
+			if !g.Grid[x][y].Open {
+				g.Grid[x][y].Open = true
+				return
+			}
+		}
 	}
 	// render grid
 	for column := 0; column < len(g.Grid); column++ {
