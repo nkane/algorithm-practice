@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/fs"
+	"log"
 	"math/rand"
 	"os"
+	"strconv"
+	"strings"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -32,15 +36,17 @@ type Cell struct {
 }
 
 type State struct {
-	MinN          int
-	MaxN          int
-	OpenSites     int32
-	N             int32
-	CellWidth     int32
-	CellHeight    int32
-	Files         []fs.DirEntry
-	FileNames     []string
-	FileListFocus int32
+	MinN                int
+	MaxN                int
+	OpenSites           int32
+	N                   int32
+	CellWidth           int32
+	CellHeight          int32
+	Files               []fs.DirEntry
+	FileNames           []string
+	FileListFocus       int32
+	FileListScrollIndex int32
+	FileListActiveIndex int32
 }
 
 type Game struct {
@@ -70,7 +76,7 @@ func (g *Game) ResetState(n int32) error {
 		OpenSites: 0,
 	}
 	var err error
-	g.State.Files, err = os.ReadDir("./data")
+	g.State.Files, err = os.ReadDir("./grid-data")
 	if err != nil {
 		return err
 	}
@@ -115,8 +121,58 @@ func (g *Game) UpdateAndRender() {
 			}
 		}
 	}
-	gui.ListViewEx(rl.NewRectangle(200, 150, 250, 150),
-		g.State.FileNames, &g.State.FileListFocus, nil, 0)
+	g.State.FileListActiveIndex = gui.ListViewEx(rl.NewRectangle(150, 150, 250, 150),
+		g.State.FileNames,
+		&g.State.FileListFocus,
+		&g.State.FileListScrollIndex,
+		g.State.FileListActiveIndex)
+	if gui.Button(rl.NewRectangle(200, 300, 150, 25), "Open File") {
+		// TODO(nick): load grid data first, then create use union find data
+		log.Printf("active index: %d", int(g.State.FileListActiveIndex))
+		if int(g.State.FileListActiveIndex) < 0 || int(g.State.FileListActiveIndex) > len(g.State.FileNames) {
+			goto skip
+		}
+		fileName := g.State.FileNames[g.State.FileListActiveIndex]
+		log.Printf("attempting to open %s", fileName)
+		f, err := os.Open(fmt.Sprintf("grid-data/%s", fileName))
+		if err != nil {
+			goto skip
+		}
+		fs := bufio.NewScanner(f)
+		fs.Split(bufio.ScanLines)
+		if !fs.Scan() {
+			log.Printf("failed to read first line of grid data file\n")
+			goto skip
+		}
+		nString := fs.Text()
+		n, err := strconv.Atoi(nString)
+		if err != nil {
+			log.Printf("failed to convert first line to int\n")
+			goto skip
+		}
+		g.ResetGame(int32(n))
+		row := 0
+		for fs.Scan() {
+			line := fs.Text()
+			tokens := strings.Fields(line)
+			log.Printf("token set: %+v", tokens)
+			if len(tokens) >= 0 {
+				for column := 0; column < len(tokens); column++ {
+					switch tokens[column] {
+					case "1":
+						g.Grid[column][row].Open = true
+						g.State.OpenSites++
+					case "0":
+						fallthrough
+					default:
+						g.Grid[column][row].Open = false
+					}
+				}
+			}
+			row++
+		}
+	}
+skip:
 
 	// render grid
 	for column := 0; column < len(g.Grid); column++ {
