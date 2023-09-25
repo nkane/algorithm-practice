@@ -80,7 +80,8 @@ func (g *Game) Render() {
 	if gui.Spinner(rl.NewRectangle(150, 10, 150, 25), "N Value", &g.State.N, g.State.MinN, g.State.MaxN, false) {
 		g.InitializeGrid(g.State.N)
 	}
-	if gui.LabelButton(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", g.State.OpenSites)) {
+	gui.SetStyle(gui.TEXTBOX, gui.TEXT_ALIGNMENT, gui.TEXT_ALIGN_CENTER)
+	if gui.Button(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", g.State.OpenSites)) {
 		if g.State.OpenSites < int32(g.State.MaxN)*int32(g.State.MaxN) {
 			g.State.OpenSites++
 			for {
