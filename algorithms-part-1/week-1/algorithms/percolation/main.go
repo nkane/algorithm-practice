@@ -58,8 +58,16 @@ func CreateGame(n int32, w *Window) *Game {
 	return &g
 }
 
+func (g *Game) ResetState(n int32) {
+	g.State = State{
+		MinN:      5,
+		MaxN:      20,
+		N:         n,
+		OpenSites: 0,
+	}
+}
+
 func (g *Game) InitializeGrid(n int32) {
-	// TODO(nick): need to reset state as well
 	g.State.CellWidth = (g.Window.Width / 2) / n
 	g.State.CellHeight = g.Window.Height / n
 	g.Grid = make([][]Cell, n)
@@ -78,6 +86,7 @@ func (g *Game) InitializeGrid(n int32) {
 func (g *Game) Render() {
 	// render GUI
 	if gui.Spinner(rl.NewRectangle(150, 10, 150, 25), "N Value", &g.State.N, g.State.MinN, g.State.MaxN, false) {
+		g.ResetState(g.State.N)
 		g.InitializeGrid(g.State.N)
 	}
 	gui.SetStyle(gui.TEXTBOX, gui.TEXT_ALIGNMENT, gui.TEXT_ALIGN_CENTER)
