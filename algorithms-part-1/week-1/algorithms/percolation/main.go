@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"math/rand"
+	"os"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -36,6 +38,8 @@ type State struct {
 	N          int32
 	CellWidth  int32
 	CellHeight int32
+	Files      []fs.DirEntry
+	FileNames  []string
 }
 
 type Game struct {
@@ -44,27 +48,35 @@ type Game struct {
 	Grid   [][]Cell
 }
 
-func CreateGame(n int32, w *Window) *Game {
+func CreateGame(n int32, w *Window) (*Game, error) {
 	g := Game{
 		Window: w,
-		State: State{
-			MinN:      5,
-			MaxN:      20,
-			N:         n,
-			OpenSites: 0,
-		},
 	}
-	g.InitializeGrid(n)
-	return &g
+	g.ResetGame(n)
+	return &g, nil
 }
 
-func (g *Game) ResetState(n int32) {
+func (g *Game) ResetGame(n int32) {
+	g.ResetState(n)
+	g.InitializeGrid(n)
+}
+
+func (g *Game) ResetState(n int32) error {
 	g.State = State{
 		MinN:      5,
 		MaxN:      20,
 		N:         n,
 		OpenSites: 0,
 	}
+	var err error
+	g.State.Files, err = os.ReadDir("./data")
+	if err != nil {
+		return err
+	}
+	for _, f := range g.State.Files {
+		g.State.FileNames = append(g.State.FileNames, f.Name())
+	}
+	return nil
 }
 
 func (g *Game) InitializeGrid(n int32) {
@@ -83,11 +95,10 @@ func (g *Game) InitializeGrid(n int32) {
 	}
 }
 
-func (g *Game) Render() {
+func (g *Game) UpdateAndRender() {
 	// render GUI
 	if gui.Spinner(rl.NewRectangle(150, 10, 150, 25), "N Value", &g.State.N, g.State.MinN, g.State.MaxN, false) {
-		g.ResetState(g.State.N)
-		g.InitializeGrid(g.State.N)
+		g.ResetGame(g.State.N)
 	}
 	gui.SetStyle(gui.TEXTBOX, gui.TEXT_ALIGNMENT, gui.TEXT_ALIGN_CENTER)
 	if gui.Button(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", g.State.OpenSites)) {
@@ -103,6 +114,9 @@ func (g *Game) Render() {
 			}
 		}
 	}
+	// TODO(nick): render all files in a selectable box
+	// ListViewEx
+	gui.ListViewEx(rl.NewRectangle(200, 150, 250, 150), g.State.FileNames, nil, nil, 0)
 
 	// render grid
 	for column := 0; column < len(g.Grid); column++ {
@@ -131,13 +145,16 @@ func main() {
 	rl.SetTargetFPS(w.FPS)
 
 	n := int32(5)
-	game := CreateGame(n, &w)
+	game, err := CreateGame(n, &w)
+	if err != nil {
+		panic(err)
+	}
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		{
 			rl.ClearBackground(rl.RayWhite)
-			game.Render()
+			game.UpdateAndRender()
 		}
 		rl.EndDrawing()
 	}
