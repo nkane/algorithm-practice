@@ -32,14 +32,15 @@ type Cell struct {
 }
 
 type State struct {
-	MinN       int
-	MaxN       int
-	OpenSites  int32
-	N          int32
-	CellWidth  int32
-	CellHeight int32
-	Files      []fs.DirEntry
-	FileNames  []string
+	MinN          int
+	MaxN          int
+	OpenSites     int32
+	N             int32
+	CellWidth     int32
+	CellHeight    int32
+	Files         []fs.DirEntry
+	FileNames     []string
+	FileListFocus int32
 }
 
 type Game struct {
@@ -114,9 +115,8 @@ func (g *Game) UpdateAndRender() {
 			}
 		}
 	}
-	// TODO(nick): render all files in a selectable box
-	// ListViewEx
-	gui.ListViewEx(rl.NewRectangle(200, 150, 250, 150), g.State.FileNames, nil, nil, 0)
+	gui.ListViewEx(rl.NewRectangle(200, 150, 250, 150),
+		g.State.FileNames, &g.State.FileListFocus, nil, 0)
 
 	// render grid
 	for column := 0; column < len(g.Grid); column++ {
