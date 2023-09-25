@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"math/rand"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
@@ -59,6 +59,7 @@ func CreateGame(n int32, w *Window) *Game {
 }
 
 func (g *Game) InitializeGrid(n int32) {
+	// TODO(nick): need to reset state as well
 	g.State.CellWidth = (g.Window.Width / 2) / n
 	g.State.CellHeight = g.Window.Height / n
 	g.Grid = make([][]Cell, n)
@@ -77,24 +78,22 @@ func (g *Game) InitializeGrid(n int32) {
 func (g *Game) Render() {
 	// render GUI
 	if gui.Spinner(rl.NewRectangle(150, 10, 150, 25), "N Value", &g.State.N, g.State.MinN, g.State.MaxN, false) {
-		log.Printf("reinit grid\n")
 		g.InitializeGrid(g.State.N)
 	}
-	if gui.Spinner(rl.NewRectangle(150, 50, 150, 25),
-		"Open Sites",
-		&g.State.OpenSites,
-		int(g.State.OpenSites),
-		int(g.State.N*g.State.N), false) {
-		log.Printf("creating open site")
-		for {
-			x := rand.Intn(int(g.State.N))
-			y := rand.Intn(int(g.State.N))
-			if !g.Grid[x][y].Open {
-				g.Grid[x][y].Open = true
-				return
+	if gui.LabelButton(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", g.State.OpenSites)) {
+		if g.State.OpenSites < int32(g.State.MaxN)*int32(g.State.MaxN) {
+			g.State.OpenSites++
+			for {
+				x := rand.Intn(int(g.State.N))
+				y := rand.Intn(int(g.State.N))
+				if !g.Grid[x][y].Open {
+					g.Grid[x][y].Open = true
+					return
+				}
 			}
 		}
 	}
+
 	// render grid
 	for column := 0; column < len(g.Grid); column++ {
 		for row := 0; row < len(g.Grid[column]); row++ {
