@@ -8,6 +8,12 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+// TODO(nick):
+// - visualize quick find
+// - visualize quick union
+// - visualize weighted quick union
+// - visualize weighted quick union compressed
+// - visualize percolation
 const (
 	DefaultFPS = int32(60)
 )

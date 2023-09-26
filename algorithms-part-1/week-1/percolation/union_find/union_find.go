@@ -1,7 +1,9 @@
 package union_find
 
-import "fmt"
-
-func Test() {
-	fmt.Println("test ...")
+type UnionFind interface {
+	Union(p int, q int)
+	Find(p int) int
+	Connected(p int, q int) bool
+	Count() int
+	IDs() []int
 }
