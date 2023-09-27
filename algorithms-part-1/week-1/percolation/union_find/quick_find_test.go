@@ -35,6 +35,17 @@ func TestQuickFindTwoElements(t *testing.T) {
 }
 
 func TestQuickFindTinyInput(t *testing.T) {
+	expectedOutput := []int{1, 1, 1, 8, 8, 1, 1, 1, 8, 8}
+	uf, err := CreateQuickFindFromFile("./data/tinyUF.txt")
+	if err != nil {
+		t.Fatalf("failed to create quick find\n")
+	}
+	if uf.Count() != 2 {
+		t.Fatalf("expected component size of 2, got: %d\n", uf.Count())
+	}
+	if !CompareIDs(expectedOutput, uf.IDs()) {
+		t.Fatalf("expected ids to be the same\n")
+	}
 }
 
 func CompareIDs(expectedIDs []int, ids []int) bool {

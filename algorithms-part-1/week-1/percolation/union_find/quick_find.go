@@ -56,3 +56,20 @@ func CreateQuickFind(n int) UnionFind {
 	}
 	return &quickFind
 }
+
+func CreateQuickFindFromFile(path string) (UnionFind, error) {
+	file, err := CreateUnionFile(path)
+	if err != nil {
+		return nil, err
+	}
+	uf := CreateQuickFind(file.N)
+	for i := 0; i < len(file.Pairs); i++ {
+		p := file.Pairs[i][0]
+		q := file.Pairs[i][1]
+		if uf.Connected(p, q) {
+			continue
+		}
+		uf.Union(p, q)
+	}
+	return uf, nil
+}
