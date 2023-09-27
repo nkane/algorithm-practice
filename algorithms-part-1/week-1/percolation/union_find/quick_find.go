@@ -5,8 +5,8 @@ type QuickFind struct {
 	Components int
 }
 
+// put p and q into the same component
 func (qf *QuickFind) Union(p int, q int) {
-	// put p and q into the same component
 	// find component associated with p
 	pID := qf.Find(p)
 	// find component associatd with q
