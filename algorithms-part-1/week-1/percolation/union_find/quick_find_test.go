@@ -34,6 +34,9 @@ func TestQuickFindTwoElements(t *testing.T) {
 	}
 }
 
+func TestQuickFindTinyInput(t *testing.T) {
+}
+
 func CompareIDs(expectedIDs []int, ids []int) bool {
 	if len(expectedIDs) != len(ids) {
 		return false
