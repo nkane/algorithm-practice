@@ -53,7 +53,17 @@ func TestQuickFindFourElements(t *testing.T) {
 	// components: 2
 	expectedIDs = []int{1, 1, 2, 1}
 	if uf.Count() != 2 {
-		t.Fatalf("expected count to be equal to 3, got: %d\n", uf.Count())
+		t.Fatalf("expected count to be equal to 2, got: %d\n", uf.Count())
+	}
+	if !CompareIDs(expectedIDs, uf.IDs()) {
+		t.Fatalf("expected ids to be the same\n")
+	}
+	uf.Union(1, 2)
+	// array: [2, 2, 2, 2]
+	// components: 1
+	expectedIDs = []int{2, 2, 2, 2}
+	if uf.Count() != 1 {
+		t.Fatalf("expected count to be equal to 1, got: %d\n", uf.Count())
 	}
 	if !CompareIDs(expectedIDs, uf.IDs()) {
 		t.Fatalf("expected ids to be the same\n")
