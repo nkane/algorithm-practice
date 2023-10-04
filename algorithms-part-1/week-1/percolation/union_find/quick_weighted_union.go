@@ -2,21 +2,34 @@ package union_find
 
 type QuickWeightedUnion struct {
 	Elements   []int
+	Sizes      []int
 	Components int
 }
 
 func (wu *QuickWeightedUnion) Union(p int, q int) {
-	// TODO(nick): implement
+	i := wu.Find(p)
+	j := wu.Find(q)
+	// make smaller root poin to larger one
+	if wu.Sizes[i] < wu.Sizes[j] {
+		wu.Elements[i] = j
+		wu.Sizes[j] += wu.Sizes[i]
+	} else {
+		wu.Elements[j] = i
+		wu.Sizes[i] += wu.Sizes[j]
+	}
+	wu.Components--
 }
 
 func (wu *QuickWeightedUnion) Find(p int) int {
-	// TODO(nick): implement
-	return -1
+	for p != wu.Elements[p] {
+		p = wu.Elements[p]
+	}
+	return p
 }
 
 func (wu *QuickWeightedUnion) Connected(p int, q int) bool {
-	// TODO(nick): implement
-	return false
+	result := wu.Find(p) == wu.Find(q)
+	return result
 }
 
 func (qw *QuickWeightedUnion) Count() int {
@@ -30,10 +43,12 @@ func (qw *QuickWeightedUnion) IDs() []int {
 func CreateQuickWeightedUnion(n int) UnionFind {
 	weightedUnion := QuickWeightedUnion{
 		Elements:   make([]int, n),
+		Sizes:      make([]int, n),
 		Components: n,
 	}
 	for i := 0; i < n; i++ {
 		weightedUnion.Elements[i] = i
+		weightedUnion.Sizes[i] = 1
 	}
 	return &weightedUnion
 }
