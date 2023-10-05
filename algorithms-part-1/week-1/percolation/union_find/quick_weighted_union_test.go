@@ -105,5 +105,23 @@ func TestQuickWeightedUnionFourElements(t *testing.T) {
 }
 
 func TestQuickWeightedUnionTinyInput(t *testing.T) {
-	// TODO(nick): implement
+	expectedIDs := []int{6, 2, 6, 4, 4, 6, 6, 2, 4, 4}
+	expectedSizes := []int{1, 1, 3, 1, 4, 1, 6, 1, 1, 1}
+	uf, err := CreateQuickWeightedUnionFromFile("./data/tinyUF.txt")
+	if err != nil {
+		t.Fatalf("failed to create quick find\n")
+	}
+	if uf.Count() != 2 {
+		t.Fatalf("expected component size of 2, got %d\n", uf.Count())
+	}
+	if !CompareIDs(expectedIDs, uf.IDs()) {
+		t.Fatalf("expected ids to be same\nexpected: %+v\ngot:%+v\n", expectedIDs, uf.IDs())
+	}
+	qwu, ok := (uf).(*QuickWeightedUnion)
+	if !ok {
+		t.Fatal("created type is not expected type of QuickWeightedUnion")
+	}
+	if !CompareIDs(expectedSizes, qwu.Sizes) {
+		t.Fatalf("expected sizes to be same\nexpected: %+v\ngot:%+v\n", expectedSizes, qwu.Sizes)
+	}
 }
