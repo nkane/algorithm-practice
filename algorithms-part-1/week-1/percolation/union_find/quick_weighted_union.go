@@ -9,6 +9,9 @@ type QuickWeightedUnion struct {
 func (wu *QuickWeightedUnion) Union(p int, q int) {
 	i := wu.Find(p)
 	j := wu.Find(q)
+	if i == j {
+		return
+	}
 	// make smaller root poin to larger one
 	if wu.Sizes[i] < wu.Sizes[j] {
 		wu.Elements[i] = j
