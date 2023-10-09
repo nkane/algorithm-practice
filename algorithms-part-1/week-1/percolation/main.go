@@ -4,6 +4,7 @@ import (
 	"fmt"
 	uf "percolation/union_find"
 
+	gui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -48,6 +49,7 @@ type State struct {
 	MinN       int
 	MaxN       int
 	OpenSites  int32
+	SpinnerN   int32
 	N          int32
 	CellWidth  int32
 	CellHeight int32
@@ -63,6 +65,7 @@ func (s *Simulation) Reinitialize(n int32) {
 	s.State.CellWidth = (s.Window.Width / 2) / n
 	s.State.CellHeight = (s.Window.Height / n)
 	s.State.N = n
+	s.State.SpinnerN = n
 	s.State.MaxN = 1
 	s.State.MaxN = 20
 	s.Grid = make([][]Cell, n)
@@ -78,10 +81,13 @@ func (s *Simulation) Reinitialize(n int32) {
 	}
 }
 
-func (s *Simulation) Update() {
-}
-
-func (s *Simulation) Render() {
+func (s *Simulation) UpdateAndRender() {
+	// render UI components
+	if gui.Spinner(rl.NewRectangle(150, 10, 150, 25), "N Value", &s.State.SpinnerN, s.State.MinN, s.State.MaxN, false) {
+		if s.State.SpinnerN != s.State.N {
+			s.Reinitialize(s.State.N)
+		}
+	}
 	// render grid
 	for column := 0; column < len(s.Grid); column++ {
 		for row := 0; row < len(s.Grid[column]); row++ {
@@ -109,7 +115,7 @@ func main() {
 		rl.BeginDrawing()
 		{
 			rl.ClearBackground(rl.RayWhite)
-			simulation.Render()
+			simulation.UpdateAndRender()
 		}
 		rl.EndDrawing()
 	}
