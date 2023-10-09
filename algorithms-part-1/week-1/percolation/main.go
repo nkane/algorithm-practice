@@ -31,6 +31,7 @@ type Window struct {
 }
 
 type Cell struct {
+	// TODO(nick): use percolation cell struct
 	X    int
 	Y    int
 	Open bool
@@ -89,7 +90,7 @@ func (s *Simulation) Reinitialize(n int32) {
 }
 
 func (s *Simulation) CheckConnections() {
-	// TODO(nick)
+	// TODO(nick):
 }
 
 func (s *Simulation) MonteCarloOpen() {
