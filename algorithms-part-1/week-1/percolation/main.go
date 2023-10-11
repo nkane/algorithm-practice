@@ -72,8 +72,8 @@ func (s *Simulation) Reinitialize(n int32) {
 	s.State.OpenSites = 0
 	// NOTE(nick): debug state
 	s.DebugState = DebugState{}
-	debug2By2 := false
-	if debug2By2 {
+	debug2x2_case_1 := false
+	if debug2x2_case_1 {
 		// order: 1 -> 0
 		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
 			ID: 1,
@@ -86,11 +86,33 @@ func (s *Simulation) Reinitialize(n int32) {
 			Y:  0,
 		})
 	}
-	// TODO(nick) order: 3 -> 0 -> 1 -> 2
-}
-
-func (s *Simulation) CheckConnections() {
-	// TODO(nick):
+	debug2x2_case_2 := false
+	if debug2x2_case_2 {
+		// order: 3 -> 0 -> 1 -> 2
+		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
+			ID: 3,
+			X:  1,
+			Y:  1,
+		})
+		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
+			ID: 0,
+			X:  0,
+			Y:  0,
+		})
+		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
+			ID: 1,
+			X:  1,
+			Y:  0,
+		})
+		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
+			ID: 2,
+			X:  0,
+			Y:  1,
+		})
+	}
+	// TODO(nick): the follwoing order doesn't attach properly
+	// order: 3 -> 0 -> 1, 3 didn't get colored
+	// order: 2 -> 3 -> 0, 3 didn't get colored
 }
 
 func (s *Simulation) MonteCarloOpen() {
@@ -128,7 +150,10 @@ func (s *Simulation) UpdateAndRender() {
 	if gui.Button(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", s.State.OpenSites)) {
 		s.MonteCarloOpen()
 	}
-	s.CheckConnections()
+
+	if s.Percolation.CheckPercolate() {
+		gui.Label(rl.NewRectangle(50, 100, 500, 50), "System Percolations")
+	}
 
 	// render grid
 	for column := 0; column < len(s.Percolation.Grid); column++ {

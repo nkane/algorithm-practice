@@ -82,7 +82,6 @@ func (p *Percolation) ConnectAdjactSites(x int, y int) {
 	}
 	cellID := x + (y * p.N)
 	p.OpenSiteIDs = append(p.OpenSiteIDs, cellID)
-	// TODO(nick): this code might not properly attach adjact sites
 	for _, dir := range directions {
 		nx := x + dir[0]
 		ny := y + dir[1]
@@ -96,10 +95,31 @@ func (p *Percolation) ConnectAdjactSites(x int, y int) {
 			// cell ID and computed id
 			adjacentCellID := nx + (ny * p.N)
 			p.UF.Union(cellID, adjacentCellID)
+			if p.UF.Connected(p.VirtualTopIndex, adjacentCellID) {
+				p.Grid[nx][ny].VirtualTopConnected = true
+			}
 		}
 	}
 	// check if site is connect to top, translate to 1D coordindate
 	if p.UF.Connected(p.VirtualTopIndex, cellID) {
 		p.Grid[x][y].VirtualTopConnected = true
 	}
+}
+
+func (p *Percolation) CheckPercolate() bool {
+	result := false
+	// special case, if the system is a 1x1
+	if len(p.Grid) == 1 && len(p.Grid[0]) == 1 {
+		// check if open first, then run connected check
+		if p.Grid[0][0].Open {
+			if p.UF.Connected(p.VirtualTopIndex, p.VirtualBottomIndex) {
+				result = true
+			}
+		}
+	} else {
+		if p.UF.Connected(p.VirtualTopIndex, p.VirtualBottomIndex) {
+			result = true
+		}
+	}
+	return result
 }
