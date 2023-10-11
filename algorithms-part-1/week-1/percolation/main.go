@@ -30,23 +30,6 @@ type Window struct {
 	FPS    int32
 }
 
-type Cell struct {
-	// TODO(nick): use percolation cell struct
-	X    int
-	Y    int
-	Open bool
-}
-
-func (c *Cell) Draw(cellWidth int32, cellHeight int32, xOffset int32, n int) {
-	if c.Open {
-		rl.DrawRectangle(int32(c.X)*cellWidth+xOffset, int32(c.Y)*cellHeight, cellWidth, cellHeight, rl.White)
-	} else {
-		rl.DrawRectangle(int32(c.X)*cellWidth+xOffset, int32(c.Y)*cellHeight, cellWidth, cellHeight, rl.Black)
-	}
-	rl.DrawText(fmt.Sprintf("%d: {x: %d, y: %d}", c.X+(c.Y*n), c.X, c.Y), int32(c.X)*cellWidth+xOffset+5, int32(c.Y)*cellHeight+10, 28, rl.Red)
-	rl.DrawRectangleLines(int32(c.X)*cellWidth+xOffset, int32(c.Y)*cellHeight, cellWidth, cellHeight, rl.Gray)
-}
-
 type State struct {
 	MinN        int
 	MaxN        int
@@ -59,11 +42,21 @@ type State struct {
 	CellHeight  int32
 }
 
+type DebugVec2 struct {
+	ID int
+	X  int
+	Y  int
+}
+
+type DebugState struct {
+	ReplayOpenOrder []DebugVec2
+}
+
 type Simulation struct {
-	Window    *Window
-	Grid      [][]Cell
-	State     State
-	UnionFind uf.UnionFind
+	Window      *Window
+	State       State
+	DebugState  DebugState
+	Percolation *uf.Percolation
 }
 
 func (s *Simulation) Reinitialize(n int32) {
@@ -75,18 +68,20 @@ func (s *Simulation) Reinitialize(n int32) {
 	s.State.MaxN = int(n) * int(n)
 	s.State.SpinnerMinN = 1
 	s.State.SpinnerMaxN = 20
-	s.Grid = make([][]Cell, n)
-	s.UnionFind = uf.CreateQuickWeightedUnion(int(n) * int(n))
-	for column := 0; column < len(s.Grid); column++ {
-		s.Grid[column] = make([]Cell, n)
-		for row := 0; row < len(s.Grid[column]); row++ {
-			s.Grid[column][row] = Cell{
-				X:    column,
-				Y:    row,
-				Open: false,
-			}
-		}
-	}
+	s.Percolation = uf.CreatePercolation(int(n))
+	s.State.OpenSites = 0
+	s.DebugState = DebugState{}
+	// NOTE(nick): debug state
+	s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
+		ID: 1,
+		X:  1,
+		Y:  0,
+	})
+	s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
+		ID: 0,
+		X:  0,
+		Y:  0,
+	})
 }
 
 func (s *Simulation) CheckConnections() {
@@ -99,8 +94,19 @@ func (s *Simulation) MonteCarloOpen() {
 		for {
 			x := rand.Intn(int(s.State.N))
 			y := rand.Intn(int(s.State.N))
-			if !s.Grid[x][y].Open {
-				s.Grid[x][y].Open = true
+			if len(s.DebugState.ReplayOpenOrder) > 0 {
+				x = s.DebugState.ReplayOpenOrder[0].X
+				y = s.DebugState.ReplayOpenOrder[0].Y
+				s.DebugState.ReplayOpenOrder = s.DebugState.ReplayOpenOrder[1:]
+			}
+
+			if !s.Percolation.Grid[x][y].Open {
+				s.Percolation.Grid[x][y].Open = true
+				// TODO(nick): on a 2x2 grid
+				// when the first (1, 0) is open and next
+				// (0, 0) is opened the bottom site gets
+				// attached to the top, this is a bug
+				s.Percolation.ConnectAdjactSites(x, y)
 				break
 			}
 		}
@@ -117,12 +123,12 @@ func (s *Simulation) UpdateAndRender() {
 	if gui.Button(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", s.State.OpenSites)) {
 		s.MonteCarloOpen()
 	}
-	//s.CheckConnections()
+	s.CheckConnections()
 
 	// render grid
-	for column := 0; column < len(s.Grid); column++ {
-		for row := 0; row < len(s.Grid[column]); row++ {
-			s.Grid[column][row].Draw(s.State.CellWidth, s.State.CellHeight, s.Window.Width/2, int(s.State.N))
+	for column := 0; column < len(s.Percolation.Grid); column++ {
+		for row := 0; row < len(s.Percolation.Grid[column]); row++ {
+			s.Percolation.Grid[column][row].Draw(s.State.CellWidth, s.State.CellHeight, s.Window.Width/2, int(s.State.N))
 		}
 	}
 }
