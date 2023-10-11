@@ -70,18 +70,23 @@ func (s *Simulation) Reinitialize(n int32) {
 	s.State.SpinnerMaxN = 20
 	s.Percolation = uf.CreatePercolation(int(n))
 	s.State.OpenSites = 0
-	s.DebugState = DebugState{}
 	// NOTE(nick): debug state
-	s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
-		ID: 1,
-		X:  1,
-		Y:  0,
-	})
-	s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
-		ID: 0,
-		X:  0,
-		Y:  0,
-	})
+	s.DebugState = DebugState{}
+	debug2By2 := false
+	if debug2By2 {
+		// order: 1 -> 0
+		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
+			ID: 1,
+			X:  1,
+			Y:  0,
+		})
+		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
+			ID: 0,
+			X:  0,
+			Y:  0,
+		})
+	}
+	// TODO(nick) order: 3 -> 0 -> 1 -> 2
 }
 
 func (s *Simulation) CheckConnections() {
