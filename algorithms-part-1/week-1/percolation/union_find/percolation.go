@@ -75,34 +75,29 @@ func (p *Percolation) Translate2DTo1D(x int, y int) int {
 
 func (p *Percolation) ConnectAdjactSites(x int, y int) {
 	directions := [][]int{
-		{1, 0},
-		{0, 1},
-		{-1, 0},
-		{0, -1},
+		{0, -1}, // top
+		{0, 1},  // bottom
+		{-1, 0}, // left
+		{1, 0},  // right
 	}
 	cellID := x + (y * p.N)
+	// check if site is connect to top, translate to 1D coordindate
+	if p.UF.Connected(p.VirtualTopIndex, cellID) {
+		p.Grid[x][y].VirtualTopConnected = true
+	}
 	p.OpenSiteIDs = append(p.OpenSiteIDs, cellID)
 	for _, dir := range directions {
 		nx := x + dir[0]
 		ny := y + dir[1]
-		if nx >= 0 &&
-			nx < p.N &&
-			ny >= 0 &&
-			ny < p.N &&
-			p.Grid[nx][ny].Open {
-			// union set
-			// TODO(nick): this needs to union between
-			// cell ID and computed id
+		if nx >= 0 && nx < p.N && ny >= 0 && ny < p.N && p.Grid[nx][ny].Open {
 			adjacentCellID := nx + (ny * p.N)
 			p.UF.Union(cellID, adjacentCellID)
 			if p.UF.Connected(p.VirtualTopIndex, adjacentCellID) {
 				p.Grid[nx][ny].VirtualTopConnected = true
+				// TODO(nick): once a site is connected we need to check it's adjact sites again
+				// flag all sites that are connected to top
 			}
 		}
-	}
-	// check if site is connect to top, translate to 1D coordindate
-	if p.UF.Connected(p.VirtualTopIndex, cellID) {
-		p.Grid[x][y].VirtualTopConnected = true
 	}
 }
 

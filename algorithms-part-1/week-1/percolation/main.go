@@ -110,9 +110,69 @@ func (s *Simulation) Reinitialize(n int32) {
 			Y:  1,
 		})
 	}
-	// TODO(nick): the follwoing order doesn't attach properly
-	// order: 3 -> 0 -> 1, 3 didn't get colored
-	// order: 2 -> 3 -> 0, 3 didn't get colored
+	debug2x2_case_3 := false
+	if debug2x2_case_3 {
+		// order: 3 -> 0 -> 1
+		s.DebugState.ReplayOpenOrder = []DebugVec2{
+			{
+				ID: 3,
+				X:  1,
+				Y:  1,
+			},
+			{
+				ID: 0,
+				X:  0,
+				Y:  0,
+			},
+			{
+				ID: 1,
+				X:  1,
+				Y:  0,
+			},
+		}
+	}
+	debug2x2_case_4 := false
+	if debug2x2_case_4 {
+		// order: 3 -> 0 -> 2
+		s.DebugState.ReplayOpenOrder = []DebugVec2{
+			{
+				ID: 3,
+				X:  1,
+				Y:  1,
+			},
+			{
+				ID: 0,
+				X:  0,
+				Y:  0,
+			},
+			{
+				ID: 2,
+				X:  0,
+				Y:  1,
+			},
+		}
+	}
+	debug2x2_case_5 := true
+	if debug2x2_case_5 {
+		// order: 2 -> 3 -> 0
+		s.DebugState.ReplayOpenOrder = []DebugVec2{
+			{
+				ID: 2,
+				X:  0,
+				Y:  1,
+			},
+			{
+				ID: 3,
+				X:  1,
+				Y:  1,
+			},
+			{
+				ID: 0,
+				X:  0,
+				Y:  0,
+			},
+		}
+	}
 }
 
 func (s *Simulation) MonteCarloOpen() {
@@ -126,13 +186,8 @@ func (s *Simulation) MonteCarloOpen() {
 				y = s.DebugState.ReplayOpenOrder[0].Y
 				s.DebugState.ReplayOpenOrder = s.DebugState.ReplayOpenOrder[1:]
 			}
-
 			if !s.Percolation.Grid[x][y].Open {
 				s.Percolation.Grid[x][y].Open = true
-				// TODO(nick): on a 2x2 grid
-				// when the first (1, 0) is open and next
-				// (0, 0) is opened the bottom site gets
-				// attached to the top, this is a bug
 				s.Percolation.ConnectAdjactSites(x, y)
 				break
 			}
