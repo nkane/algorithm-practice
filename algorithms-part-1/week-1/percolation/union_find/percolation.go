@@ -11,6 +11,8 @@ type Cell struct {
 	Y                   int
 	Open                bool
 	VirtualTopConnected bool
+	Position            rl.Vector2
+	Size                rl.Vector2
 }
 
 func (c *Cell) Draw(cellWidth int32, cellHeight int32, xOffset int32, n int) {
