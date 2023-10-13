@@ -9,12 +9,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-// TODO(nick):
-// - visualize quick find
-// - visualize quick union
-// - visualize weighted quick union
-// - visualize weighted quick union compressed
-// - visualize percolation
 const (
 	DefaultFPS = int32(60)
 )
@@ -152,7 +146,7 @@ func (s *Simulation) Reinitialize(n int32) {
 			},
 		}
 	}
-	debug2x2_case_5 := true
+	debug2x2_case_5 := false
 	if debug2x2_case_5 {
 		// order: 2 -> 3 -> 0
 		s.DebugState.ReplayOpenOrder = []DebugVec2{
@@ -170,6 +164,43 @@ func (s *Simulation) Reinitialize(n int32) {
 				ID: 0,
 				X:  0,
 				Y:  0,
+			},
+		}
+	}
+	debug2x2_case_6 := false
+	if debug2x2_case_6 {
+		// order: 1 -> 0 -> 2
+		s.DebugState.ReplayOpenOrder = []DebugVec2{
+			{
+				ID: 1,
+				X:  1,
+				Y:  0,
+			},
+			{
+				ID: 0,
+				X:  0,
+				Y:  0,
+			},
+			{
+				ID: 2,
+				X:  0,
+				Y:  1,
+			},
+		}
+	}
+	debug2x2_case_7 := false
+	if debug2x2_case_7 {
+		// order: 1 -> 3
+		s.DebugState.ReplayOpenOrder = []DebugVec2{
+			{
+				ID: 1,
+				X:  1,
+				Y:  0,
+			},
+			{
+				ID: 3,
+				X:  1,
+				Y:  1,
 			},
 		}
 	}
