@@ -9,6 +9,14 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+/*
+TODO(nick):
+- add ability to open cells by click instead of relying on random order
+- this percolation algorithm isn't working as expected, need to debug and look into what is going on
+- make virtual top site 0 and the bottom site n*n+1
+- blog: https://coderanch.com/t/604648/java/Code-review-Percolation-java
+*/
+
 const (
 	DefaultFPS = int32(60)
 )
@@ -188,7 +196,7 @@ func (s *Simulation) Reinitialize(n int32) {
 			},
 		}
 	}
-	debug2x2_case_7 := false
+	debug2x2_case_7 := true
 	if debug2x2_case_7 {
 		// order: 1 -> 3
 		s.DebugState.ReplayOpenOrder = []DebugVec2{

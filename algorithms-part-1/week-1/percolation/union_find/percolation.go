@@ -80,6 +80,17 @@ func (p *Percolation) ValidatePosition(x int, y int) bool {
 	return false
 }
 
+func (p *Percolation) FlagOpenGridCells() {
+	for y := 0; y < len(p.Grid); y++ {
+		for x := 0; x < len(p.Grid[y]); x++ {
+			cellID := x + (y * p.N)
+			if p.UF.Connected(p.VirtualTopIndex, cellID) {
+				p.Grid[y][y].VirtualTopConnected = true
+			}
+		}
+	}
+}
+
 func (p *Percolation) ConnectAdjactSites(x int, y int) {
 	directions := [][]int{
 		{0, -1}, // top
@@ -88,10 +99,6 @@ func (p *Percolation) ConnectAdjactSites(x int, y int) {
 		{1, 0},  // right
 	}
 	cellID := x + (y * p.N)
-	// check if site is connect to top, translate to 1D coordindate
-	if p.UF.Connected(p.VirtualTopIndex, cellID) {
-		p.Grid[x][y].VirtualTopConnected = true
-	}
 	p.OpenSiteIDs = append(p.OpenSiteIDs, cellID)
 	for _, dir := range directions {
 		nx := x + dir[0]
@@ -106,11 +113,6 @@ func (p *Percolation) ConnectAdjactSites(x int, y int) {
 				for _, dir := range directions {
 					nnx := nx + dir[0]
 					nny := ny + dir[1]
-					/*
-						if nnx == x && nny == y {
-							continue
-						}
-					*/
 					if p.ValidatePosition(nnx, nny) {
 						if p.Grid[nnx][nny].Open {
 							p.Grid[nnx][nny].VirtualTopConnected = true
@@ -120,9 +122,7 @@ func (p *Percolation) ConnectAdjactSites(x int, y int) {
 			}
 		}
 	}
-	if p.UF.Connected(p.VirtualTopIndex, cellID) {
-		p.Grid[x][y].VirtualTopConnected = true
-	}
+	p.FlagOpenGridCells()
 }
 
 func (p *Percolation) CheckPercolate() bool {
