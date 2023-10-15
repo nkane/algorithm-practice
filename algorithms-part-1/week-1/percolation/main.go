@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"percolation/grid"
 	uf "percolation/union_find"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
@@ -13,7 +14,6 @@ import (
 TODO(nick):
 - add ability to open cells by click instead of relying on random order
 - this percolation algorithm isn't working as expected, need to debug and look into what is going on
-- make virtual top site 0 and the bottom site n*n+1
 - blog: https://coderanch.com/t/604648/java/Code-review-Percolation-java
 */
 
@@ -59,6 +59,7 @@ type Simulation struct {
 	State       State
 	DebugState  DebugState
 	Percolation *uf.Percolation
+	Grid        *grid.Grid
 }
 
 func (s *Simulation) Reinitialize(n int32) {
@@ -70,148 +71,159 @@ func (s *Simulation) Reinitialize(n int32) {
 	s.State.MaxN = int(n) * int(n)
 	s.State.SpinnerMinN = 1
 	s.State.SpinnerMaxN = 20
+	offset := rl.Vector2{
+		X: float32(s.Window.Width / 2),
+		Y: float32(0),
+	}
+	size := rl.Vector2{
+		X: float32((s.Window.Width / 2) / n),
+		Y: float32((s.Window.Height / n)),
+	}
+	s.Grid = grid.CreateGrid(int(n), offset, size)
 	s.Percolation = uf.CreatePercolation(int(n))
 	s.State.OpenSites = 0
 	// NOTE(nick): debug state
 	s.DebugState = DebugState{}
-	debug2x2_case_1 := false
-	if debug2x2_case_1 {
-		// order: 1 -> 0
-		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
-			ID: 1,
-			X:  1,
-			Y:  0,
-		})
-		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
-			ID: 0,
-			X:  0,
-			Y:  0,
-		})
-	}
-	debug2x2_case_2 := false
-	if debug2x2_case_2 {
-		// order: 3 -> 0 -> 1 -> 2
-		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
-			ID: 3,
-			X:  1,
-			Y:  1,
-		})
-		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
-			ID: 0,
-			X:  0,
-			Y:  0,
-		})
-		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
-			ID: 1,
-			X:  1,
-			Y:  0,
-		})
-		s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
-			ID: 2,
-			X:  0,
-			Y:  1,
-		})
-	}
-	debug2x2_case_3 := false
-	if debug2x2_case_3 {
-		// order: 3 -> 0 -> 1
-		s.DebugState.ReplayOpenOrder = []DebugVec2{
-			{
-				ID: 3,
-				X:  1,
-				Y:  1,
-			},
-			{
-				ID: 0,
-				X:  0,
-				Y:  0,
-			},
-			{
+	/*
+		debug2x2_case_1 := false
+		if debug2x2_case_1 {
+			// order: 1 -> 0
+			s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
 				ID: 1,
 				X:  1,
 				Y:  0,
-			},
-		}
-	}
-	debug2x2_case_4 := false
-	if debug2x2_case_4 {
-		// order: 3 -> 0 -> 2
-		s.DebugState.ReplayOpenOrder = []DebugVec2{
-			{
-				ID: 3,
-				X:  1,
-				Y:  1,
-			},
-			{
+			})
+			s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
 				ID: 0,
 				X:  0,
 				Y:  0,
-			},
-			{
-				ID: 2,
-				X:  0,
-				Y:  1,
-			},
+			})
 		}
-	}
-	debug2x2_case_5 := false
-	if debug2x2_case_5 {
-		// order: 2 -> 3 -> 0
-		s.DebugState.ReplayOpenOrder = []DebugVec2{
-			{
-				ID: 2,
-				X:  0,
-				Y:  1,
-			},
-			{
+		debug2x2_case_2 := false
+		if debug2x2_case_2 {
+			// order: 3 -> 0 -> 1 -> 2
+			s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
 				ID: 3,
 				X:  1,
 				Y:  1,
-			},
-			{
+			})
+			s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
 				ID: 0,
 				X:  0,
 				Y:  0,
-			},
-		}
-	}
-	debug2x2_case_6 := false
-	if debug2x2_case_6 {
-		// order: 1 -> 0 -> 2
-		s.DebugState.ReplayOpenOrder = []DebugVec2{
-			{
+			})
+			s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
 				ID: 1,
 				X:  1,
 				Y:  0,
-			},
-			{
-				ID: 0,
-				X:  0,
-				Y:  0,
-			},
-			{
+			})
+			s.DebugState.ReplayOpenOrder = append(s.DebugState.ReplayOpenOrder, DebugVec2{
 				ID: 2,
 				X:  0,
 				Y:  1,
-			},
+			})
 		}
-	}
-	debug2x2_case_7 := true
-	if debug2x2_case_7 {
-		// order: 1 -> 3
-		s.DebugState.ReplayOpenOrder = []DebugVec2{
-			{
-				ID: 1,
-				X:  1,
-				Y:  0,
-			},
-			{
-				ID: 3,
-				X:  1,
-				Y:  1,
-			},
+		debug2x2_case_3 := false
+		if debug2x2_case_3 {
+			// order: 3 -> 0 -> 1
+			s.DebugState.ReplayOpenOrder = []DebugVec2{
+				{
+					ID: 3,
+					X:  1,
+					Y:  1,
+				},
+				{
+					ID: 0,
+					X:  0,
+					Y:  0,
+				},
+				{
+					ID: 1,
+					X:  1,
+					Y:  0,
+				},
+			}
 		}
-	}
+		debug2x2_case_4 := false
+		if debug2x2_case_4 {
+			// order: 3 -> 0 -> 2
+			s.DebugState.ReplayOpenOrder = []DebugVec2{
+				{
+					ID: 3,
+					X:  1,
+					Y:  1,
+				},
+				{
+					ID: 0,
+					X:  0,
+					Y:  0,
+				},
+				{
+					ID: 2,
+					X:  0,
+					Y:  1,
+				},
+			}
+		}
+		debug2x2_case_5 := false
+		if debug2x2_case_5 {
+			// order: 2 -> 3 -> 0
+			s.DebugState.ReplayOpenOrder = []DebugVec2{
+				{
+					ID: 2,
+					X:  0,
+					Y:  1,
+				},
+				{
+					ID: 3,
+					X:  1,
+					Y:  1,
+				},
+				{
+					ID: 0,
+					X:  0,
+					Y:  0,
+				},
+			}
+		}
+		debug2x2_case_6 := false
+		if debug2x2_case_6 {
+			// order: 1 -> 0 -> 2
+			s.DebugState.ReplayOpenOrder = []DebugVec2{
+				{
+					ID: 1,
+					X:  1,
+					Y:  0,
+				},
+				{
+					ID: 0,
+					X:  0,
+					Y:  0,
+				},
+				{
+					ID: 2,
+					X:  0,
+					Y:  1,
+				},
+			}
+		}
+		debug2x2_case_7 := true
+		if debug2x2_case_7 {
+			// order: 1 -> 3
+			s.DebugState.ReplayOpenOrder = []DebugVec2{
+				{
+					ID: 1,
+					X:  1,
+					Y:  0,
+				},
+				{
+					ID: 3,
+					X:  1,
+					Y:  1,
+				},
+			}
+		}
+	*/
 }
 
 func (s *Simulation) MonteCarloOpen() {
@@ -248,13 +260,15 @@ func (s *Simulation) UpdateAndRender() {
 	if s.Percolation.CheckPercolate() {
 		gui.Label(rl.NewRectangle(50, 100, 500, 50), "System Percolations")
 	}
-
-	// render grid
-	for column := 0; column < len(s.Percolation.Grid); column++ {
-		for row := 0; row < len(s.Percolation.Grid[column]); row++ {
-			s.Percolation.Grid[column][row].Draw(s.State.CellWidth, s.State.CellHeight, s.Window.Width/2, int(s.State.N))
+	s.Grid.Draw()
+	/*
+		// render grid
+		for column := 0; column < len(s.Percolation.Grid); column++ {
+			for row := 0; row < len(s.Percolation.Grid[column]); row++ {
+				s.Percolation.Grid[column][row].Draw(s.State.CellWidth, s.State.CellHeight, s.Window.Width/2, int(s.State.N))
+			}
 		}
-	}
+	*/
 }
 
 func main() {

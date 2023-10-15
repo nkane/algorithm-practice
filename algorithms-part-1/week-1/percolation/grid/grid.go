@@ -1,4 +1,4 @@
-package main
+package grid
 
 import (
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -21,9 +21,10 @@ func (c *Cell) Draw() {
 	if c.Open {
 		color = rl.White
 	}
-	rl.DrawRectangle(int32(position.X), int32(position.Y), int32(c.Size.X), int32(c.Size.Y), color)
+	rec := rl.NewRectangle(position.X, position.Y, c.Size.X, c.Size.Y)
+	rl.DrawRectangleRec(rec, color)
+	rl.DrawRectangleLinesEx(rec, 10.0, rl.Yellow)
 	//rl.DrawText(fmt.Sprintf("%d: {x: %d, y: %d}", c.X+(c.Y*n), c.X, c.Y), int32(c.X)*cellWidth+xOffset+5, int32(c.Y)*cellHeight+10, 28, rl.Red)
-	//rl.DrawRectangleLines(int32(c.X)*cellWidth+xOffset, int32(c.Y)*cellHeight, cellWidth, cellHeight, rl.Gray)
 }
 
 type Grid struct {
