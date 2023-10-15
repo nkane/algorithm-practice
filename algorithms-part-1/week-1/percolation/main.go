@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+
 	"percolation/grid"
 	uf "percolation/union_find"
 
@@ -33,15 +34,14 @@ type Window struct {
 }
 
 type State struct {
-	MinN        int
-	MaxN        int
-	OpenSites   int
-	SpinnerMinN int
-	SpinnerMaxN int
-	SpinnerN    int32
-	N           int32
-	CellWidth   int32
-	CellHeight  int32
+	MinN           int
+	MaxN           int
+	OpenSites      int
+	SpinnerMinN    int
+	SpinnerMaxN    int
+	SpinnerN       int32
+	N              int32
+	CursorPosition rl.Vector2
 }
 
 type DebugVec2 struct {
@@ -63,8 +63,6 @@ type Simulation struct {
 }
 
 func (s *Simulation) Reinitialize(n int32) {
-	s.State.CellWidth = (s.Window.Width / 2) / n
-	s.State.CellHeight = (s.Window.Height / n)
 	s.State.N = n
 	s.State.SpinnerN = n
 	s.State.MinN = 1
@@ -80,8 +78,9 @@ func (s *Simulation) Reinitialize(n int32) {
 		Y: float32((s.Window.Height / n)),
 	}
 	s.Grid = grid.CreateGrid(int(n), offset, size)
-	s.Percolation = uf.CreatePercolation(int(n))
 	s.State.OpenSites = 0
+	s.Percolation = uf.CreatePercolation(int(n))
+
 	// NOTE(nick): debug state
 	s.DebugState = DebugState{}
 	/*
@@ -247,6 +246,8 @@ func (s *Simulation) MonteCarloOpen() {
 }
 
 func (s *Simulation) UpdateAndRender() {
+	s.State.CursorPosition = rl.GetMousePosition()
+
 	// render UI components
 	if gui.Spinner(rl.NewRectangle(150, 10, 150, 25), "N Value", &s.State.SpinnerN, s.State.SpinnerMinN, s.State.SpinnerMaxN, false) {
 		if s.State.SpinnerN != s.State.N {
@@ -257,10 +258,24 @@ func (s *Simulation) UpdateAndRender() {
 		s.MonteCarloOpen()
 	}
 
-	if s.Percolation.CheckPercolate() {
-		gui.Label(rl.NewRectangle(50, 100, 500, 50), "System Percolations")
+	// TODO(nick): uncomment this
+	/*
+		if s.Percolation.CheckPercolate() {
+			gui.Label(rl.NewRectangle(50, 100, 500, 50), "System Percolations")
+		}
+	*/
+
+	s.Grid.SetCursorIntersect(s.State.CursorPosition)
+
+	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
+		s.Grid.OpenAtCursor()
+	} else if rl.IsMouseButtonPressed(rl.MouseRightButton) {
+		s.Grid.CloseAtCursor()
 	}
+
 	s.Grid.Draw()
+
+	// TODO(nick): old code, remove this
 	/*
 		// render grid
 		for column := 0; column < len(s.Percolation.Grid); column++ {
