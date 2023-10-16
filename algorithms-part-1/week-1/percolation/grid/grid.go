@@ -1,10 +1,13 @@
 package grid
 
 import (
+	uf "percolation/union_find"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Cell struct {
+	ID        int
 	X         int
 	Y         int
 	Open      bool
@@ -30,10 +33,11 @@ func (c *Cell) DrawWithBorder() {
 }
 
 type Grid struct {
-	Cells    [][]Cell
-	N        int
-	Offset   rl.Vector2
-	CursorAt *rl.Vector2
+	Cells       [][]Cell
+	N           int
+	Offset      rl.Vector2
+	CursorAt    *rl.Vector2
+	Percolation *uf.Percolation
 }
 
 func (g *Grid) Draw() {
@@ -69,6 +73,21 @@ func (g *Grid) OpenAtCursor() {
 		y := int(g.CursorAt.Y)
 		if !g.Cells[y][x].Open {
 			g.Cells[y][x].Open = true
+			// TODO(nick): union all adjacent sides
+			direction := [][]int{
+				{1, 0},  // right
+				{-1, 0}, // left
+				{0, 1},  // up
+				{0, -1}, // down
+			}
+			// check right
+			nX := x + direction[0][0]
+			nY := y + direction[0][1]
+			if g.Percolation.ValidatePosition(nX, nY) {
+				nIdx := g.Percolation.Translate2DTo1D(nX, nY)
+				idx := g.Percolation.Translate2DTo1D(x, y)
+				g.Percolation.UF.Union(idx, nIdx)
+			}
 		}
 	}
 }
@@ -85,10 +104,12 @@ func (g *Grid) CloseAtCursor() {
 
 func CreateGrid(n int, offset rl.Vector2, size rl.Vector2) *Grid {
 	grid := Grid{
-		N:      n,
-		Offset: offset,
-		Cells:  make([][]Cell, n),
+		N:           n,
+		Offset:      offset,
+		Cells:       make([][]Cell, n),
+		Percolation: uf.CreatePercolation(int(n)),
 	}
+	id := 1
 	for y := 0; y < len(grid.Cells); y++ {
 		grid.Cells[y] = make([]Cell, n)
 		for x := 0; x < len(grid.Cells[0]); x++ {
@@ -98,6 +119,7 @@ func CreateGrid(n int, offset rl.Vector2, size rl.Vector2) *Grid {
 			}
 			rectangle := rl.NewRectangle(position.X, position.Y, size.X, size.Y)
 			grid.Cells[y][x] = Cell{
+				ID:        id,
 				X:         x,
 				Y:         y,
 				Open:      false,

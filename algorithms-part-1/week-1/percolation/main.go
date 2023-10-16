@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 
 	"percolation/grid"
-	uf "percolation/union_find"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -16,6 +14,7 @@ TODO(nick):
 - add ability to open cells by click instead of relying on random order
 - this percolation algorithm isn't working as expected, need to debug and look into what is going on
 - blog: https://coderanch.com/t/604648/java/Code-review-Percolation-java
+- maybe merge both grid and percolation?
 */
 
 const (
@@ -55,11 +54,11 @@ type DebugState struct {
 }
 
 type Simulation struct {
-	Window      *Window
-	State       State
-	DebugState  DebugState
-	Percolation *uf.Percolation
-	Grid        *grid.Grid
+	Window     *Window
+	State      State
+	DebugState DebugState
+	//Percolation *uf.Percolation
+	Grid *grid.Grid
 }
 
 func (s *Simulation) Reinitialize(n int32) {
@@ -79,7 +78,7 @@ func (s *Simulation) Reinitialize(n int32) {
 	}
 	s.Grid = grid.CreateGrid(int(n), offset, size)
 	s.State.OpenSites = 0
-	s.Percolation = uf.CreatePercolation(int(n))
+	//s.Percolation = uf.CreatePercolation(int(n))
 
 	// NOTE(nick): debug state
 	s.DebugState = DebugState{}
@@ -226,23 +225,25 @@ func (s *Simulation) Reinitialize(n int32) {
 }
 
 func (s *Simulation) MonteCarloOpen() {
-	if s.State.OpenSites < s.State.MaxN {
-		s.State.OpenSites++
-		for {
-			x := rand.Intn(int(s.State.N))
-			y := rand.Intn(int(s.State.N))
-			if len(s.DebugState.ReplayOpenOrder) > 0 {
-				x = s.DebugState.ReplayOpenOrder[0].X
-				y = s.DebugState.ReplayOpenOrder[0].Y
-				s.DebugState.ReplayOpenOrder = s.DebugState.ReplayOpenOrder[1:]
-			}
-			if !s.Percolation.Grid[x][y].Open {
-				s.Percolation.Grid[x][y].Open = true
-				s.Percolation.ConnectAdjactSites(x, y)
-				break
+	/*
+		if s.State.OpenSites < s.State.MaxN {
+			s.State.OpenSites++
+			for {
+				x := rand.Intn(int(s.State.N))
+				y := rand.Intn(int(s.State.N))
+				if len(s.DebugState.ReplayOpenOrder) > 0 {
+					x = s.DebugState.ReplayOpenOrder[0].X
+					y = s.DebugState.ReplayOpenOrder[0].Y
+					s.DebugState.ReplayOpenOrder = s.DebugState.ReplayOpenOrder[1:]
+				}
+				if !s.Percolation.Grid[x][y].Open {
+					s.Percolation.Grid[x][y].Open = true
+					s.Percolation.ConnectAdjactSites(x, y)
+					break
+				}
 			}
 		}
-	}
+	*/
 }
 
 func (s *Simulation) UpdateAndRender() {
@@ -266,11 +267,10 @@ func (s *Simulation) UpdateAndRender() {
 	*/
 
 	s.Grid.SetCursorIntersect(s.State.CursorPosition)
-
 	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 		s.Grid.OpenAtCursor()
 	} else if rl.IsMouseButtonPressed(rl.MouseRightButton) {
-		s.Grid.CloseAtCursor()
+		//s.Grid.CloseAtCursor()
 	}
 
 	s.Grid.Draw()
