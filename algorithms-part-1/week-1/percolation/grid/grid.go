@@ -7,29 +7,32 @@ import (
 )
 
 type Cell struct {
-	ID        int
-	X         int
-	Y         int
-	Open      bool
-	Size      rl.Vector2
-	Offset    rl.Vector2
-	Position  rl.Vector2
-	Rectangle rl.Rectangle
+	ID                  int
+	X                   int
+	Y                   int
+	Open                bool
+	VirtualTopConnected bool
+	Size                rl.Vector2
+	Offset              rl.Vector2
+	Position            rl.Vector2
+	Rectangle           rl.Rectangle
 }
 
-func (c *Cell) Draw() {
+func (c *Cell) Draw(hoverCell bool, connectedToVirtualTop bool) {
 	color := rl.Black
 	if c.Open {
-		color = rl.White
+		if connectedToVirtualTop {
+			color = rl.SkyBlue
+		} else {
+			color = rl.White
+		}
 	}
 	rl.DrawRectangleRec(c.Rectangle, color)
 	//rl.DrawText(fmt.Sprintf("%d: {x: %d, y: %d}", c.X+(c.Y*n), c.X, c.Y), int32(c.X)*cellWidth+xOffset+5, int32(c.Y)*cellHeight+10, 28, rl.Red)
 	rl.DrawRectangleLinesEx(c.Rectangle, 1.0, rl.LightGray)
-}
-
-func (c *Cell) DrawWithBorder() {
-	c.Draw()
-	rl.DrawRectangleLinesEx(c.Rectangle, 10.0, rl.Yellow)
+	if hoverCell {
+		rl.DrawRectangleLinesEx(c.Rectangle, 10.0, rl.Yellow)
+	}
 }
 
 type Grid struct {
@@ -43,11 +46,11 @@ type Grid struct {
 func (g *Grid) Draw() {
 	for y := 0; y < len(g.Cells); y++ {
 		for x := 0; x < len(g.Cells[0]); x++ {
-			if g.CursorAt != nil && int(g.CursorAt.Y) == y && int(g.CursorAt.X) == x {
-				g.Cells[y][x].DrawWithBorder()
-			} else {
-				g.Cells[y][x].Draw()
-			}
+			idx := g.Percolation.Translate2DTo1D(x, y)
+			// check if cell is connected to top
+			connectedToVirtualTop := g.Percolation.UF.Connected(g.Percolation.VirtualTopIndex, idx)
+			hoverCell := g.CursorAt != nil && int(g.CursorAt.Y) == y && int(g.CursorAt.X) == x
+			g.Cells[y][x].Draw(hoverCell, connectedToVirtualTop)
 		}
 	}
 }
@@ -73,31 +76,42 @@ func (g *Grid) OpenAtCursor() {
 		y := int(g.CursorAt.Y)
 		if !g.Cells[y][x].Open {
 			g.Cells[y][x].Open = true
-			// TODO(nick): union all adjacent sides
-			direction := [][]int{
+			idx := g.Percolation.Translate2DTo1D(x, y)
+			if y == 0 {
+				g.Percolation.UF.Union(g.Percolation.VirtualTopIndex, idx)
+			}
+			if y == g.N-1 {
+				g.Percolation.UF.Union(g.Percolation.VirtualBottomIndex, idx)
+			}
+			if g.Percolation.UF.Connected(g.Percolation.VirtualTopIndex, idx) {
+				g.Cells[y][x].VirtualTopConnected = true
+			}
+			directions := [][]int{
 				{1, 0},  // right
 				{-1, 0}, // left
-				{0, 1},  // up
-				{0, -1}, // down
+				{0, 1},  // down
+				{0, -1}, // up
 			}
-			// check right
-			nX := x + direction[0][0]
-			nY := y + direction[0][1]
-			if g.Percolation.ValidatePosition(nX, nY) {
-				nIdx := g.Percolation.Translate2DTo1D(nX, nY)
-				idx := g.Percolation.Translate2DTo1D(x, y)
-				g.Percolation.UF.Union(idx, nIdx)
+			for _, dir := range directions {
+				nX := x + dir[0]
+				nY := y + dir[1]
+				g.OpenAt(x, y, nX, nY)
 			}
 		}
 	}
 }
 
-func (g *Grid) CloseAtCursor() {
-	if g.CursorAt != nil {
-		x := int(g.CursorAt.X)
-		y := int(g.CursorAt.Y)
-		if g.Cells[y][x].Open {
-			g.Cells[y][x].Open = false
+func (g *Grid) OpenAt(x int, y int, nX int, nY int) {
+	if g.Percolation.ValidatePosition(nX, nY) {
+		if g.Cells[nY][nX].Open {
+			idx := g.Percolation.Translate2DTo1D(x, y)
+			nIdx := g.Percolation.Translate2DTo1D(nX, nY)
+			g.Percolation.UF.Union(idx, nIdx)
+			if g.Percolation.UF.Connected(g.Percolation.VirtualTopIndex, nIdx) {
+				g.Cells[y][x].VirtualTopConnected = true
+				g.Cells[nY][nX].VirtualTopConnected = true
+				// open any adjacent cells
+			}
 		}
 	}
 }
@@ -110,9 +124,9 @@ func CreateGrid(n int, offset rl.Vector2, size rl.Vector2) *Grid {
 		Percolation: uf.CreatePercolation(int(n)),
 	}
 	id := 1
-	for y := 0; y < len(grid.Cells); y++ {
+	for y := 0; y < n; y++ {
 		grid.Cells[y] = make([]Cell, n)
-		for x := 0; x < len(grid.Cells[0]); x++ {
+		for x := 0; x < n; x++ {
 			position := rl.Vector2{
 				X: float32(x)*size.X + offset.X,
 				Y: float32(y)*size.Y + offset.Y,
@@ -128,6 +142,7 @@ func CreateGrid(n int, offset rl.Vector2, size rl.Vector2) *Grid {
 				Position:  position,
 				Rectangle: rectangle,
 			}
+			id++
 		}
 	}
 	return &grid

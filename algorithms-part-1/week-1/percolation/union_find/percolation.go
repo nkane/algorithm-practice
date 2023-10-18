@@ -20,13 +20,11 @@ func (p *Percolation) Reinitialize(n int) {
 	p.UF = CreateQuickWeightedUnion(n*n + 2)
 	p.VirtualTopIndex = 0
 	p.VirtualBottomIndex = n*n + 1
-	// connect top row to virtual top and bottom row to virtual bottom
-	for idx := 0; idx < n; idx++ {
-		// TODO(nick): these idx are messed up debug this
-		topIdx := idx + 1
-		p.UF.Union(p.VirtualTopIndex, topIdx)
-		bottomIdx := idx + ((n * n) - 1)
-		p.UF.Union(p.VirtualBottomIndex, bottomIdx)
+	for topRow := 1; topRow < n+1; topRow++ {
+		p.UF.Union(p.VirtualTopIndex, topRow)
+	}
+	for bottomRow := (n*(n-1) + 1); bottomRow < p.VirtualBottomIndex; bottomRow++ {
+		p.UF.Union(p.VirtualBottomIndex, bottomRow)
 	}
 }
 

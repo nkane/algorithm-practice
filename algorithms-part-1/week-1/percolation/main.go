@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"percolation/grid"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
@@ -78,7 +76,6 @@ func (s *Simulation) Reinitialize(n int32) {
 	}
 	s.Grid = grid.CreateGrid(int(n), offset, size)
 	s.State.OpenSites = 0
-	//s.Percolation = uf.CreatePercolation(int(n))
 
 	// NOTE(nick): debug state
 	s.DebugState = DebugState{}
@@ -255,22 +252,22 @@ func (s *Simulation) UpdateAndRender() {
 			s.Reinitialize(s.State.SpinnerN)
 		}
 	}
-	if gui.Button(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", s.State.OpenSites)) {
-		s.MonteCarloOpen()
-	}
 
-	// TODO(nick): uncomment this
 	/*
-		if s.Percolation.CheckPercolate() {
-			gui.Label(rl.NewRectangle(50, 100, 500, 50), "System Percolations")
+		if gui.Button(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", s.State.OpenSites)) {
+			s.MonteCarloOpen()
 		}
+
+		// TODO(nick): uncomment this
 	*/
+	if s.Grid.Percolation.Percolates() {
+		gui.Label(rl.NewRectangle(50, 100, 500, 50), "System Percolations")
+	}
 
 	s.Grid.SetCursorIntersect(s.State.CursorPosition)
 	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 		s.Grid.OpenAtCursor()
-	} else if rl.IsMouseButtonPressed(rl.MouseRightButton) {
-		//s.Grid.CloseAtCursor()
+
 	}
 
 	s.Grid.Draw()
