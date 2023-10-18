@@ -41,8 +41,10 @@ func (p *Percolation) ValidatePosition(x int, y int) bool {
 }
 
 func (p *Percolation) Percolates() bool {
-	if p.UF.Connected(p.VirtualTopIndex, p.VirtualBottomIndex) {
-		return true
+	if len(p.OpenSiteIDs) > 0 {
+		if p.UF.Connected(p.VirtualTopIndex, p.VirtualBottomIndex) {
+			return true
+		}
 	}
 	return false
 }

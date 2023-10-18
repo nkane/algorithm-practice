@@ -7,15 +7,14 @@ import (
 )
 
 type Cell struct {
-	ID                  int
-	X                   int
-	Y                   int
-	Open                bool
-	VirtualTopConnected bool
-	Size                rl.Vector2
-	Offset              rl.Vector2
-	Position            rl.Vector2
-	Rectangle           rl.Rectangle
+	ID        int
+	X         int
+	Y         int
+	Open      bool
+	Size      rl.Vector2
+	Offset    rl.Vector2
+	Position  rl.Vector2
+	Rectangle rl.Rectangle
 }
 
 func (c *Cell) Draw(hoverCell bool, connectedToVirtualTop bool) {
@@ -74,43 +73,35 @@ func (g *Grid) OpenAtCursor() {
 	if g.CursorAt != nil {
 		x := int(g.CursorAt.X)
 		y := int(g.CursorAt.Y)
-		if !g.Cells[y][x].Open {
-			g.Cells[y][x].Open = true
-			idx := g.Percolation.Translate2DTo1D(x, y)
-			if y == 0 {
-				g.Percolation.UF.Union(g.Percolation.VirtualTopIndex, idx)
-			}
-			if y == g.N-1 {
-				g.Percolation.UF.Union(g.Percolation.VirtualBottomIndex, idx)
-			}
-			if g.Percolation.UF.Connected(g.Percolation.VirtualTopIndex, idx) {
-				g.Cells[y][x].VirtualTopConnected = true
-			}
-			directions := [][]int{
-				{1, 0},  // right
-				{-1, 0}, // left
-				{0, 1},  // down
-				{0, -1}, // up
-			}
-			for _, dir := range directions {
-				nX := x + dir[0]
-				nY := y + dir[1]
-				g.OpenAt(x, y, nX, nY)
-			}
-		}
+		g.OpenAt(x, y)
 	}
 }
 
-func (g *Grid) OpenAt(x int, y int, nX int, nY int) {
-	if g.Percolation.ValidatePosition(nX, nY) {
-		if g.Cells[nY][nX].Open {
-			idx := g.Percolation.Translate2DTo1D(x, y)
-			nIdx := g.Percolation.Translate2DTo1D(nX, nY)
-			g.Percolation.UF.Union(idx, nIdx)
-			if g.Percolation.UF.Connected(g.Percolation.VirtualTopIndex, nIdx) {
-				g.Cells[y][x].VirtualTopConnected = true
-				g.Cells[nY][nX].VirtualTopConnected = true
-				// open any adjacent cells
+func (g *Grid) OpenAt(x int, y int) {
+	if !g.Cells[y][x].Open {
+		g.Cells[y][x].Open = true
+		idx := g.Percolation.Translate2DTo1D(x, y)
+		g.Percolation.OpenSiteIDs = append(g.Percolation.OpenSiteIDs, idx)
+		if y == 0 {
+			g.Percolation.UF.Union(g.Percolation.VirtualTopIndex, idx)
+		}
+		if y == g.N-1 {
+			g.Percolation.UF.Union(g.Percolation.VirtualBottomIndex, idx)
+		}
+		directions := [][]int{
+			{1, 0},  // right
+			{-1, 0}, // left
+			{0, 1},  // down
+			{0, -1}, // up
+		}
+		for _, dir := range directions {
+			nX := x + dir[0]
+			nY := y + dir[1]
+			if g.Percolation.ValidatePosition(nX, nY) {
+				if g.Cells[nY][nX].Open {
+					nIdx := g.Percolation.Translate2DTo1D(nX, nY)
+					g.Percolation.UF.Union(idx, nIdx)
+				}
 			}
 		}
 	}
