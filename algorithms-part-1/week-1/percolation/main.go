@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"percolation/grid"
+	"sync"
+	"time"
 
 	gui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -33,6 +35,8 @@ type State struct {
 	SpinnerN       int32
 	N              int32
 	CursorPosition rl.Vector2
+	Percolates     bool
+	Lock           sync.RWMutex
 }
 
 type DebugVec2 struct {
@@ -53,6 +57,7 @@ type Simulation struct {
 }
 
 func (s *Simulation) Reinitialize(n int32) {
+	s.State = State{}
 	s.State.N = n
 	s.State.SpinnerN = n
 	s.State.MinN = 1
@@ -68,24 +73,38 @@ func (s *Simulation) Reinitialize(n int32) {
 		Y: float32((s.Window.Height / n)),
 	}
 	s.Grid = grid.CreateGrid(int(n), offset, size)
+	s.State.Lock.Lock()
 	s.State.OpenSites = 0
+	s.State.Lock.Unlock()
 	s.DebugState = DebugState{}
 }
 
 func (s *Simulation) MonteCarloOpen() {
-	if s.State.OpenSites < s.State.MaxN {
-		s.State.OpenSites++
-		for {
-			x := rand.Intn(int(s.State.N))
-			y := rand.Intn(int(s.State.N))
-			if len(s.DebugState.ReplayOpenOrder) > 0 {
-				x = s.DebugState.ReplayOpenOrder[0].X
-				y = s.DebugState.ReplayOpenOrder[0].Y
-				s.DebugState.ReplayOpenOrder = s.DebugState.ReplayOpenOrder[1:]
+	go func() {
+		if !s.State.Percolates {
+			if s.State.OpenSites < s.State.MaxN {
+				for {
+					x := rand.Intn(int(s.State.N))
+					y := rand.Intn(int(s.State.N))
+					if len(s.DebugState.ReplayOpenOrder) > 0 {
+						x = s.DebugState.ReplayOpenOrder[0].X
+						y = s.DebugState.ReplayOpenOrder[0].Y
+						s.DebugState.ReplayOpenOrder = s.DebugState.ReplayOpenOrder[1:]
+					}
+					// TODO(nick): can run this in a go routine until it the system percolates
+					if s.Grid.OpenAt(x, y) {
+						s.State.Lock.Lock()
+						s.State.OpenSites++
+						s.State.Lock.Unlock()
+						time.Sleep(600 * time.Millisecond)
+					}
+					if s.State.Percolates {
+						break
+					}
+				}
 			}
-			s.Grid.OpenAt(x, y)
 		}
-	}
+	}()
 }
 
 func (s *Simulation) UpdateAndRender() {
@@ -99,12 +118,20 @@ func (s *Simulation) UpdateAndRender() {
 	if gui.Button(rl.NewRectangle(150, 50, 150, 25), fmt.Sprintf("Open Sites: %d", s.State.OpenSites)) {
 		s.MonteCarloOpen()
 	}
+	if gui.Button(rl.NewRectangle(150, 75, 150, 25), "Reset") {
+		s.Reinitialize(s.State.SpinnerN)
+	}
 	if s.Grid.Percolation.Percolates() {
 		gui.Label(rl.NewRectangle(50, 100, 500, 50), "System Percolations")
+		s.State.Percolates = true
 	}
 	s.Grid.SetCursorIntersect(s.State.CursorPosition)
 	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-		s.Grid.OpenAtCursor()
+		if set := s.Grid.OpenAtCursor(); set {
+			s.State.Lock.Lock()
+			s.State.OpenSites++
+			s.State.Lock.Unlock()
+		}
 	}
 	s.Grid.Draw()
 }

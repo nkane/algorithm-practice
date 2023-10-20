@@ -69,15 +69,16 @@ func (g *Grid) SetCursorIntersect(cursorPosition rl.Vector2) {
 	}
 }
 
-func (g *Grid) OpenAtCursor() {
+func (g *Grid) OpenAtCursor() bool {
 	if g.CursorAt != nil {
 		x := int(g.CursorAt.X)
 		y := int(g.CursorAt.Y)
-		g.OpenAt(x, y)
+		return g.OpenAt(x, y)
 	}
+	return false
 }
 
-func (g *Grid) OpenAt(x int, y int) {
+func (g *Grid) OpenAt(x int, y int) bool {
 	if !g.Cells[y][x].Open {
 		g.Cells[y][x].Open = true
 		idx := g.Percolation.Translate2DTo1D(x, y)
@@ -104,7 +105,9 @@ func (g *Grid) OpenAt(x int, y int) {
 				}
 			}
 		}
+		return true
 	}
+	return false
 }
 
 func CreateGrid(n int, offset rl.Vector2, size rl.Vector2) *Grid {
