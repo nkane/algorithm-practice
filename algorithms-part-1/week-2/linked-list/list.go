@@ -1,5 +1,7 @@
 package list
 
+import "errors"
+
 type Node struct {
 	Next  *Node
 	Value interface{}
@@ -57,9 +59,36 @@ func (l *SingleLinkedList) Find(idx int) *Node {
 	return node
 }
 
-func (l *SingleLinkedList) RemoveAt(idx int) {
-	// TODO
+func (l *SingleLinkedList) RemoveAt(idx int) error {
+	if idx > l.Length-1 {
+		return errors.New("cannot remove, index out of range")
+	}
+	if idx == 0 {
+		prevHead := l.Head
+		l.Head = l.Head.Next
+		prevHead.Next = nil
+		prevHead.Value = nil
+		l.Length--
+		if l.Length == 0 {
+			l.Tail = nil
+		}
+		return nil
+	}
+	prevNode := l.Find(idx - 1)
+	if idx == l.Length-1 {
+		prevTail := l.Tail
+		l.Tail = prevNode
+		prevTail.Next = nil
+		prevTail.Value = nil
+		l.Length--
+		return nil
+	}
+	node := l.Find(idx)
+	prevNode.Next = node.Next
+	node.Next = nil
+	node.Value = nil
 	l.Length--
+	return nil
 }
 
 func (l *SingleLinkedList) Next() *Node {

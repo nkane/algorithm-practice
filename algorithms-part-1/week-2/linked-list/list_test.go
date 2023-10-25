@@ -48,3 +48,14 @@ func TestListMultiNode(t *testing.T) {
 		}
 	}
 }
+
+func TestListRemoveSingleNode(t *testing.T) {
+	list := CreateSingleLinkedList()
+	if list == nil {
+		t.Fatalf("failed to create list")
+	}
+	list.Append(8)
+	if err := list.RemoveAt(0); err != nil {
+		t.Fatalf("failed to remove node at index zero")
+	}
+}
