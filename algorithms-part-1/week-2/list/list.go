@@ -7,19 +7,19 @@ type Node struct {
 	Value interface{}
 }
 
-type SingleLinkedList struct {
+type SinglyLinkedList struct {
 	Head        *Node
 	Tail        *Node
 	Length      int
 	IteratorIdx int
 }
 
-func CreateSingleLinkedList() *SingleLinkedList {
+func CreateSingleLinkedList() *SinglyLinkedList {
 	list := SingleLinkedList{}
 	return &list
 }
 
-func (l *SingleLinkedList) Append(v interface{}) {
+func (l *SinglyLinkedList) Append(v interface{}) {
 	n := Node{
 		Next:  nil,
 		Value: v,
@@ -34,7 +34,7 @@ func (l *SingleLinkedList) Append(v interface{}) {
 	l.Tail = &n
 }
 
-func (l *SingleLinkedList) Prepend(v interface{}) {
+func (l *SinglyLinkedList) Prepend(v interface{}) {
 	n := Node{
 		Next:  nil,
 		Value: v,
@@ -49,7 +49,7 @@ func (l *SingleLinkedList) Prepend(v interface{}) {
 	l.Head = &n
 }
 
-func (l *SingleLinkedList) Find(idx int) *Node {
+func (l *SinglyLinkedList) Find(idx int) *Node {
 	if idx > l.Length-1 {
 		return nil
 	}
@@ -62,7 +62,7 @@ func (l *SingleLinkedList) Find(idx int) *Node {
 	return node
 }
 
-func (l *SingleLinkedList) RemoveAt(idx int) error {
+func (l *SinglyLinkedList) RemoveAt(idx int) error {
 	if idx > l.Length-1 {
 		return errors.New("cannot remove, index out of range")
 	}
@@ -94,7 +94,7 @@ func (l *SingleLinkedList) RemoveAt(idx int) error {
 	return nil
 }
 
-func (l *SingleLinkedList) Next() *Node {
+func (l *SinglyLinkedList) Next() *Node {
 	if l.Length-1 < l.IteratorIdx {
 		return nil
 	}
