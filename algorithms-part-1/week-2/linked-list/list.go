@@ -50,6 +50,9 @@ func (l *SingleLinkedList) Prepend(v interface{}) {
 }
 
 func (l *SingleLinkedList) Find(idx int) *Node {
+	if idx > l.Length-1 {
+		return nil
+	}
 	node := l.Head
 	sIdx := 0
 	for node != nil && sIdx < idx {
@@ -92,7 +95,7 @@ func (l *SingleLinkedList) RemoveAt(idx int) error {
 }
 
 func (l *SingleLinkedList) Next() *Node {
-	if l.Length < l.IteratorIdx {
+	if l.Length-1 < l.IteratorIdx {
 		return nil
 	}
 	node := l.Find(l.IteratorIdx)

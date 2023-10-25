@@ -59,3 +59,28 @@ func TestListRemoveSingleNode(t *testing.T) {
 		t.Fatalf("failed to remove node at index zero")
 	}
 }
+
+func TestListRemoveNodes(t *testing.T) {
+	list := CreateSingleLinkedList()
+	if list == nil {
+		t.Fatalf("failed to create list")
+	}
+	list.Append(32)
+	list.Append(64)
+	list.Append(128)
+	list.Prepend(16)
+	list.Prepend(8)
+	list.RemoveAt(0)
+	list.RemoveAt(list.Length - 1)
+	list.RemoveAt(1)
+	expectedOrder := []int{16, 64}
+	actualOrder := []int{}
+	for node := list.Next(); node != nil; node = list.Next() {
+		actualOrder = append(actualOrder, node.Value.(int))
+	}
+	for idx, v := range expectedOrder {
+		if actualOrder[idx] != v {
+			t.Fatalf("idx: %d does not match expected value of %d", idx, v)
+		}
+	}
+}
