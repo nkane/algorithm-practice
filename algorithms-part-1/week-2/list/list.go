@@ -1,6 +1,8 @@
 package list
 
-import "errors"
+import (
+	"errors"
+)
 
 type Node struct {
 	Next  *Node
@@ -15,7 +17,7 @@ type SinglyLinkedList struct {
 }
 
 func CreateSingleLinkedList() *SinglyLinkedList {
-	list := SingleLinkedList{}
+	list := SinglyLinkedList{}
 	return &list
 }
 
@@ -104,4 +106,15 @@ func (l *SinglyLinkedList) Next() *Node {
 	}
 	l.IteratorIdx++
 	return node
+}
+
+func (l *SinglyLinkedList) ValuesHeadToTail() []interface{} {
+	node := l.Head
+	idx := 0
+	result := []interface{}{}
+	for node != nil && idx < l.Length-1 {
+		result = append(result, node.Value)
+		node = node.Next
+	}
+	return result
 }

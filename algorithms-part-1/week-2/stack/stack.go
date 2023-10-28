@@ -4,8 +4,9 @@ import (
 	"week-2/list"
 )
 
+// Stack, first in last out structure
 type Stack struct {
-	list list.SinglyLinkedList
+	List list.SinglyLinkedList
 }
 
 func CreateStack() *Stack {
@@ -14,15 +15,19 @@ func CreateStack() *Stack {
 }
 
 func (s *Stack) Push(v interface{}) {
-	// TODO(nick): implement
+	s.List.Prepend(v)
 }
 
 func (s *Stack) Pop() interface{} {
-	// TODO(nick): implement
-	return nil
+	node := s.List.Find(0)
+	if node == nil {
+		return nil
+	}
+	value := node.Value
+	s.List.RemoveAt(0)
+	return value
 }
 
 func (s *Stack) Peek() interface{} {
-	// TODO(nick): implement
-	return nil
+	return s.List.Find(0)
 }
