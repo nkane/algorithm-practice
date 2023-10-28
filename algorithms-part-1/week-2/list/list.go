@@ -85,6 +85,7 @@ func (l *SinglyLinkedList) RemoveAt(idx int) error {
 		l.Tail = prevNode
 		prevTail.Next = nil
 		prevTail.Value = nil
+		l.Tail.Next = nil
 		l.Length--
 		return nil
 	}
@@ -112,9 +113,10 @@ func (l *SinglyLinkedList) ValuesHeadToTail() []interface{} {
 	node := l.Head
 	idx := 0
 	result := []interface{}{}
-	for node != nil && idx < l.Length-1 {
+	for node != nil && idx < l.Length {
 		result = append(result, node.Value)
 		node = node.Next
+		idx++
 	}
 	return result
 }

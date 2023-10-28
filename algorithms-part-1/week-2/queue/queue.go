@@ -4,46 +4,56 @@ import (
 	"week-2/list"
 )
 
-// Deque, double-ended queue
+// Deque, double-ended queue, first in first out structure
 type Deque struct {
-	list list.SinglyLinkedList
+	List list.SinglyLinkedList
 }
 
-func CreateQueue() *Deque {
+func CreateDeque() *Deque {
 	queue := Deque{}
 	return &queue
 }
 
 func (q *Deque) Enqueue(v interface{}) {
-	// TODO(nick): implement
+	q.List.Append(v)
 }
 
 func (q *Deque) Dequeue() interface{} {
-	// TODO(nick): implement
-	return nil
+	node := q.List.Find(0)
+	if node == nil {
+		return nil
+	}
+	value := node.Value
+	q.List.RemoveAt(0)
+	return value
+}
+
+func (q *Deque) PeekFirst() interface{} {
+	return q.List.Head.Value
+}
+
+func (q *Deque) PeekLast() interface{} {
+	return q.List.Tail.Value
 }
 
 func (q *Deque) AddFirst(v interface{}) {
-	// TODO(nick): implement
+	q.List.Prepend(v)
 }
 
 func (q *Deque) AddLast(v interface{}) {
-	// TODO(nick): implement
+	q.Enqueue(v)
 }
 
-func (q *Deque) RemoveFirst() {
-	// TODO(nick): implement
+func (q *Deque) RemoveFirst() interface{} {
+	return q.Dequeue()
 }
 
-func (q *Deque) RemoveLast() {
-	// TODO(nick): implement
-}
-
-func (q *Deque) Next() interface{} {
-	// TODO(nick): implement
-	return nil
-}
-
-func (q *Deque) Size() int {
-	return q.list.Length
+func (q *Deque) RemoveLast() interface{} {
+	node := q.List.Find(q.List.Length - 1)
+	if node == nil {
+		return nil
+	}
+	value := node.Value
+	q.List.RemoveAt(q.List.Length - 1)
+	return value
 }
