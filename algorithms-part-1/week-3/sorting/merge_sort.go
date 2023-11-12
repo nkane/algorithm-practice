@@ -4,19 +4,18 @@ import "cmp"
 
 func MergeSort[T cmp.Ordered](list []T) []T {
 	aux := make([]T, len(list))
-	Sort(list, aux, 0, len(list)-1)
+	MSort(list, aux, 0, len(list)-1)
 	return list
 }
 
-func Sort[T cmp.Ordered](list []T, aux []T, low int, high int) []T {
+func MSort[T cmp.Ordered](list []T, aux []T, low int, high int) {
 	if high <= low {
-		return list
+		return
 	}
 	mid := low + (high-low)/2
-	Sort(list, aux, low, mid)
-	Sort(list, aux, mid+1, high)
+	MSort(list, aux, low, mid)
+	MSort(list, aux, mid+1, high)
 	Merge(list, aux, low, mid, high)
-	return list
 }
 
 func Merge[T cmp.Ordered](list []T, aux []T, low int, mid int, high int) []T {
