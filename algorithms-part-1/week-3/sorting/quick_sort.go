@@ -11,9 +11,9 @@ func QSort[T cmp.Ordered](list []T, low int, high int) {
 	if high <= low {
 		return
 	}
-	j := Partition[T](list, low, high)
-	QSort[T](list, low, j-1)
-	QSort[T](list, j+1, high)
+	pivot := Partition[T](list, low, high)
+	QSort[T](list, low, pivot-1)
+	QSort[T](list, pivot+1, high)
 }
 
 func Partition[T cmp.Ordered](list []T, low int, high int) int {
