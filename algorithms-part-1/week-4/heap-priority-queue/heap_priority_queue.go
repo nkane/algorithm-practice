@@ -9,7 +9,7 @@ type MaxPriorityQueue[T cmp.Ordered] struct {
 
 func CreateMaxPriorityQueue[T cmp.Ordered](n int) *MaxPriorityQueue[T] {
 	mq := MaxPriorityQueue[T]{
-		N: n,
+		N: 0,
 		Q: make([]T, n+1),
 	}
 	return &mq
@@ -17,17 +17,13 @@ func CreateMaxPriorityQueue[T cmp.Ordered](n int) *MaxPriorityQueue[T] {
 
 func (q *MaxPriorityQueue[T]) Insert(value T) {
 	q.N++
-	if q.N > len(q.Q) {
-		// TODO(nick): resize?
-		q.Q = append(q.Q, value)
-	} else {
-		q.Q[q.N] = value
-	}
+	q.Q[q.N] = value
+	q.Swim(q.N)
 }
 
 func (q *MaxPriorityQueue[T]) Swim(k int) {
 	for k > 1 && q.Less(k/2, k) {
-		q.Exchange(k/2, k)
+		q.Exchange(k, k/2)
 		k = k / 2
 	}
 }
@@ -64,5 +60,7 @@ func (q *MaxPriorityQueue[T]) Less(i int, j int) bool {
 }
 
 func (q *MaxPriorityQueue[T]) Exchange(i int, j int) {
-	q.Q[i], q.Q[j] = q.Q[j], q.Q[i]
+	tmp := q.Q[i]
+	q.Q[i] = q.Q[j]
+	q.Q[j] = tmp
 }
