@@ -1,4 +1,4 @@
-package lib
+package algorithms
 
 import (
 	"fmt"
@@ -21,4 +21,15 @@ func PrintSlice(slice []int, numItems int) {
 	} else {
 		fmt.Println(slice[:numItems])
 	}
+}
+
+func CheckSort(slice []int) bool {
+	for i := 1; i < len(slice); i++ {
+		if slice[i-1] > slice[i] {
+			fmt.Println("The slice is NOT sorted!")
+			return false
+		}
+	}
+	fmt.Println("The slice is sorted")
+	return true
 }
