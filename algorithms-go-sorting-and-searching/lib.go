@@ -15,7 +15,7 @@ func MakeRandomSlice(numItems int, max int) []int {
 	return result
 }
 
-func PrintSlice(slice []int, numItems int) {
+func PrintSlice[T any](slice []T, numItems int) {
 	if len(slice) <= numItems {
 		fmt.Println(slice)
 	} else {
