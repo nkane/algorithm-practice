@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestBubbleSort() {
+func BubbleSortTest() {
 	rand.Seed(time.Now().UnixNano())
 
 	// Get the number of items and maximum item value.

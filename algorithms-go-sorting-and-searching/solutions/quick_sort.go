@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestQuickSort() {
+func QuickSortTest() {
 	rand.Seed(time.Now().UnixNano())
 
 	// Get the number of items and maximum item value.

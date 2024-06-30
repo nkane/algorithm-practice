@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"time"
 )
 
 type Customer struct {
@@ -12,18 +11,16 @@ type Customer struct {
 	NumPurchases int
 }
 
-func MakeCustomerSlice() []Customer {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	result := make([]Customer, r.Int())
+func MakeCustomerSlice(numItems int, max int) []Customer {
+	result := make([]Customer, numItems)
 	for i := 0; i < len(result); i++ {
-		id := fmt.Sprintf("C%d", r.Int())
+		id := fmt.Sprintf("C%d", i)
 		result[i] = Customer{
 			ID:           id,
-			NumPurchases: r.Int(),
+			NumPurchases: rand.Intn(max),
 		}
 	}
-	PrintSlice(result, len(result))
-	return nil
+	return result
 }
 
 func CheckCustomersSliceSorted(slice []Customer) bool {
@@ -43,7 +40,7 @@ func CountingSort(a []Customer, digit int, radix int) []Customer {
 
 	// create a list b which will be the sorted list
 	b := make([]Customer, len(a))
-	c := make([]int, len(a))
+	c := make([]int, radix)
 
 	// count the number of occurences of each digit in a
 	for i := 0; i < len(a); i++ {
@@ -59,7 +56,7 @@ func CountingSort(a []Customer, digit int, radix int) []Customer {
 	}
 
 	// to count down (go through a backwards)
-	for m := len(a) - 1; m > 0; m-- {
+	for m := len(a) - 1; m >= 0; m-- {
 		digitOfAi := a[m].NumPurchases / int(math.Pow(float64(radix), float64(digit))) % radix
 		c[digitOfAi] = c[digitOfAi] - 1
 		b[c[digitOfAi]] = a[m]
