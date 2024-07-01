@@ -46,6 +46,7 @@ func (list *LinkedList[T]) AddRange(values []T) {
 			Data: v,
 			Next: nil,
 		})
+		lastCell = lastCell.Next
 	}
 }
 
@@ -69,6 +70,18 @@ func (list *LinkedList[T]) ToString(separator string) string {
 	for cell != nil {
 		sb.WriteString(fmt.Sprintf("%+v%s", cell.Data, separator))
 		cell = cell.Next
+	}
+	return sb.String()
+}
+
+func (list *LinkedList[T]) ToStringMax(separator string, max int) string {
+	sb := strings.Builder{}
+	cell := list.Sentinel.Next
+	i := 0
+	for cell != nil && i < max {
+		sb.WriteString(fmt.Sprintf("%+v%s", cell.Data, separator))
+		cell = cell.Next
+		i++
 	}
 	return sb.String()
 }
