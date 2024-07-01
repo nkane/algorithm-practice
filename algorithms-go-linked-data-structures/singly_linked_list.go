@@ -15,13 +15,13 @@ func (c *Cell[T]) AddAfter(after *Cell[T]) {
 	c.Next = after
 }
 
-func (c *Cell[T]) DeleteAfter(after *Cell[T]) *Cell[T] {
+func (c *Cell[T]) DeleteAfter() *Cell[T] {
 	if c.Next == nil {
 		panic("expected cell to have next, doesn't have next pointer")
 	}
-	temp := c.Next
-	c.Next = after
-	return temp
+	after := c.Next
+	c.Next = after.Next
+	return after
 }
 
 type LinkedList[T any] struct {
@@ -38,7 +38,7 @@ func CreateLinkedList[T any]() *LinkedList[T] {
 
 func (list *LinkedList[T]) AddRange(values []T) {
 	lastCell := list.Sentinel
-	for lastCell != nil {
+	for lastCell.Next != nil {
 		lastCell = lastCell.Next
 	}
 	for _, v := range values {
@@ -56,7 +56,7 @@ func (list *LinkedList[T]) Length() int {
 		l++
 		cell = cell.Next
 	}
-	return -1
+	return l
 }
 
 func (list *LinkedList[T]) IsEmpty() bool {
@@ -65,7 +65,7 @@ func (list *LinkedList[T]) IsEmpty() bool {
 
 func (list *LinkedList[T]) ToString(separator string) string {
 	sb := strings.Builder{}
-	cell := list.Sentinel
+	cell := list.Sentinel.Next
 	for cell != nil {
 		sb.WriteString(fmt.Sprintf("%+v%s", cell.Data, separator))
 		cell = cell.Next
@@ -123,4 +123,16 @@ func (list *LinkedList[T]) Clone() *LinkedList[T] {
 // Clear removes all of the items from the list
 func (list *LinkedList[T]) Clear() {
 	// TODO(nick): optional implementatioen
+}
+
+func (list *LinkedList[T]) Push(value T) {
+	list.Sentinel.AddAfter(&Cell[T]{
+		Data: value,
+		Next: nil,
+	})
+}
+
+func (list *LinkedList[T]) Pop() *T {
+	pop := list.Sentinel.DeleteAfter()
+	return &pop.Data
 }
