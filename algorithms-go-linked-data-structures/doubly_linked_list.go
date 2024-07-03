@@ -22,15 +22,15 @@ func (n *Node[T]) AddBefore(before *Node[T]) {
 	n.Previous.AddAfter(before)
 }
 
-func (n *Node[T]) DeleteAfter() *Node[T] {
-	//
+func (n *Node[T]) Delete() *Node[T] {
 	if n.Next == nil {
 		panic("expected node to have next, doesn't have next pointer")
 	}
-	after := n.Next
-	n.Next = after.Next
-	n.Next.Previous = n
-	return after
+	next := n.Next
+	previous := n.Previous
+	next.Previous = previous
+	previous.Next = next
+	return n
 }
 
 type DoublyLinkedList[T any] struct {
@@ -62,7 +62,6 @@ func (list *DoublyLinkedList[T]) AddRange(values []T) {
 			Next:     nil,
 			Previous: nil,
 		})
-		// lastNode = lastNode.Next
 	}
 }
 
@@ -77,7 +76,7 @@ func (list *DoublyLinkedList[T]) Length() int {
 }
 
 func (list *DoublyLinkedList[T]) IsEmpty() bool {
-	return list.TopSentinel.Next == nil
+	return list.TopSentinel.Next == list.BottomSentinel
 }
 
 func (list *DoublyLinkedList[T]) ToString(separator string) string {
@@ -102,16 +101,42 @@ func (list *DoublyLinkedList[T]) ToStringMax(separator string, max int) string {
 	return sb.String()
 }
 
-/*
-func (list *DoublyLinkedList[T]) Push(value T) {
-	list.Sentinel.AddAfter(&Cell[T]{
+func (list *DoublyLinkedList[T]) Enqueue(value T) {
+	list.TopSentinel.AddAfter(&Node[T]{
 		Data: value,
-		Next: nil,
 	})
 }
 
-func (list *DoublyLinkedList[T]) Pop() *T {
-	pop := list.Sentinel.DeleteAfter()
-	return &pop.Data
+func (list *DoublyLinkedList[T]) PushTop(value T) {
+	list.TopSentinel.AddAfter(&Node[T]{
+		Data: value,
+	})
 }
-*/
+
+func (list *DoublyLinkedList[T]) PopTop() *Node[T] {
+	if list.IsEmpty() {
+		return nil
+	}
+	return list.TopSentinel.Next.Delete()
+}
+
+func (list *DoublyLinkedList[T]) PushBottom(value T) {
+	list.BottomSentinel.AddBefore(&Node[T]{
+		Data: value,
+	})
+}
+
+func (list *DoublyLinkedList[T]) PopBottom() *Node[T] {
+	if list.IsEmpty() {
+		return nil
+	}
+	return list.BottomSentinel.Previous.Delete()
+}
+
+func (list *DoublyLinkedList[T]) Dequeue() *Node[T] {
+	return list.BottomSentinel.Previous.Delete()
+}
+
+func (list *DoublyLinkedList[T]) Deque() *Node[T] {
+	return list.PopBottom()
+}
