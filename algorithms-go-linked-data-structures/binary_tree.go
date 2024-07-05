@@ -3,9 +3,11 @@ package data_structures
 import (
 	"fmt"
 	"strings"
+
+	"golang.org/x/exp/constraints"
 )
 
-type BinaryTreeNode[T any] struct {
+type BinaryTreeNode[T constraints.Ordered] struct {
 	Data  T
 	Left  *BinaryTreeNode[T]
 	Right *BinaryTreeNode[T]
@@ -43,6 +45,34 @@ func BuildTree() *BinaryTreeNode[string] {
 		},
 	}
 	return &aNode
+}
+
+func (bt *BinaryTreeNode[T]) Insert(data T) {
+	for {
+		if data <= bt.Data {
+			// add or move down the left branch
+			if bt.Left == nil {
+				bt.Left = &BinaryTreeNode[T]{
+					Data: data,
+				}
+				break
+			} else {
+				bt.Left.Insert(data)
+				break
+			}
+		} else {
+			/// add or move down the right branch
+			if bt.Right == nil {
+				bt.Right = &BinaryTreeNode[T]{
+					Data: data,
+				}
+				break
+			} else {
+				bt.Right.Insert(data)
+				break
+			}
+		}
+	}
 }
 
 func (bt *BinaryTreeNode[T]) DisplayIndented(indent string, depth int) string {
@@ -93,5 +123,17 @@ func (bt *BinaryTreeNode[T]) PostOrder() string {
 
 func (bt *BinaryTreeNode[T]) BreadthFirst() string {
 	result := ""
+	queue := CreateDoublyLinkedList[*BinaryTreeNode[T]](&BinaryTreeNode[T]{}, &BinaryTreeNode[T]{})
+	queue.Enqueue(bt)
+	for !queue.IsEmpty() {
+		currentNode := queue.Dequeue()
+		result += fmt.Sprintf("%v ", currentNode.Data.Data)
+		if currentNode.Data.Left != nil {
+			queue.Enqueue(currentNode.Data.Left)
+		}
+		if currentNode.Data.Right != nil {
+			queue.Enqueue(currentNode.Data.Right)
+		}
+	}
 	return result
 }
