@@ -12,6 +12,26 @@ func TestFibonacci(t *testing.T) {
 		Output int64
 	}{
 		{
+			Input:  0,
+			Output: 0,
+		},
+		{
+			Input:  1,
+			Output: 1,
+		},
+		{
+			Input:  2,
+			Output: 1,
+		},
+		{
+			Input:  3,
+			Output: 2,
+		},
+		{
+			Input:  4,
+			Output: 3,
+		},
+		{
 			Input:  5,
 			Output: 5,
 		},
