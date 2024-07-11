@@ -119,25 +119,113 @@ func boardIsASolution(board [][]string) bool {
 	return numQueens == numRows
 }
 
-func placeQueen1(board [][]string, r int, c int) bool {
+func placeQueens1(board [][]string, r int, c int) bool {
 	numRows := len(board)
 	if r >= numRows {
 		return boardIsASolution(board)
 	}
-
 	nextR := r
 	nextC := c + 1
 	if nextC >= numRows {
 		nextR += 1
 		nextC = 0
 	}
-	if placeQueen1(board, nextR, nextC) {
+	if placeQueens1(board, nextR, nextC) {
 		return true
 	}
 	board[r][c] = "Q"
-	if placeQueen1(board, nextR, nextC) {
+	if placeQueens1(board, nextR, nextC) {
 		return true
 	}
 	board[r][c] = "."
 	return false
+}
+
+func placeQueens2(board [][]string, numPlaced int, r int, c int) bool {
+	numRows := len(board)
+	if r >= numRows {
+		return boardIsASolution(board)
+	}
+	nextR := r
+	nextC := c + 1
+	if nextC >= numRows {
+		nextR += 1
+		nextC = 0
+	}
+	if placeQueens2(board, numPlaced, nextR, nextC) {
+		return true
+	}
+	board[r][c] = "Q"
+	numPlaced += 1
+	if placeQueens2(board, numPlaced, nextR, nextC) {
+		return true
+	}
+	board[r][c] = "."
+	numPlaced -= 1
+	return false
+}
+
+func placeQueens3(board [][]string, numPlaced int) bool {
+	numRows := len(board)
+	numCols := numRows
+	numAttacking := make([][]int, numRows)
+	for r := range board {
+		numAttacking[r] = make([]int, numCols)
+	}
+	return doPlaceQueens3(board, numRows, numPlaced, 0, 0, numAttacking)
+}
+
+func doPlaceQueens3(board [][]string, numRows int, numPlaced int, r int, c int, numAttacking [][]int) bool {
+	if numPlaced == numRows {
+		return boardIsASolution(board)
+	}
+	if r >= numRows {
+		return false
+	}
+	nextR := r
+	nextC := c + 1
+	if nextC >= numRows {
+		nextR += 1
+		nextC = 0
+	}
+	if doPlaceQueens3(board, numRows, numPlaced, nextR, nextC, numAttacking) {
+		return true
+	}
+	if numAttacking[r][c] == 0 {
+		board[r][c] = "Q"
+		numPlaced += 1
+		adjustAttackCounts(numAttacking, numRows, r, c, +1)
+		if doPlaceQueens3(board, numRows, numPlaced, nextR, nextC, numAttacking) {
+			return true
+		}
+		board[r][c] = "."
+		numPlaced -= 1
+		adjustAttackCounts(numAttacking, numRows, r, c, -1)
+	}
+	return false
+}
+
+func adjustAttackCounts(numAttacking [][]int, numRows int, r int, c int, amount int) {
+	for i := 0; i < numRows; i++ {
+		numAttacking[r][i] += amount
+	}
+	for i := 0; i < numRows; i++ {
+		numAttacking[i][c] += amount
+	}
+	for i := -numRows; i < numRows; i++ {
+		testR := r + i
+		testC := c + i
+		if testR >= 0 && testR < numRows &&
+			testC >= 0 && testC < numRows {
+			numAttacking[testR][testC] += amount
+		}
+	}
+	for i := -numRows; i < numRows; i++ {
+		testR := r + i
+		testC := c - i
+		if testR >= 0 && testR < numRows &&
+			testC >= 0 && testC < numRows {
+			numAttacking[testR][testC] += amount
+		}
+	}
 }
