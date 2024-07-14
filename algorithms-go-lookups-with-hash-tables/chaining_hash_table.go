@@ -4,11 +4,6 @@ import (
 	"fmt"
 )
 
-type Employee struct {
-	Name  string
-	Phone string
-}
-
 type ChainingHashTable struct {
 	NumBuckets int
 	Buckets    [][]*Employee
