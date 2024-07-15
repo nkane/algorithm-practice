@@ -1,6 +1,8 @@
 package hash_table
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type LinearProbingHashTable struct {
 	Capacity  int
@@ -17,7 +19,11 @@ func NewLinearProbingHashTable(capacity int) *LinearProbingHashTable {
 func (ht *LinearProbingHashTable) Dump() {
 	for i, e := range ht.Employees {
 		if e != nil {
-			fmt.Printf("%d: %s\t%s\n", i, e.Name, e.Phone)
+			if e.Deleted {
+				fmt.Printf("%d: xxx\n", i)
+			} else {
+				fmt.Printf("%d: %s\t%s\n", i, e.Name, e.Phone)
+			}
 		} else {
 			fmt.Printf("%d: ---\n", i)
 		}
@@ -38,12 +44,25 @@ func (ht *LinearProbingHashTable) Hash(value string) int {
 
 func (ht *LinearProbingHashTable) Find(name string) (int, int) {
 	hash := ht.Hash(name) % ht.Capacity
+	deletedIndex := -1
 	for i := 0; i < ht.Capacity; i++ {
 		index := (hash + i) % ht.Capacity
-		if ht.Employees[index] == nil ||
-			ht.Employees[index].Name == name {
+		if ht.Employees[index] == nil {
+			if deletedIndex >= 0 {
+				return deletedIndex, i + 1
+			}
 			return index, i + 1
 		}
+		if ht.Employees[index].Deleted {
+			if deletedIndex < 0 {
+				deletedIndex = index
+			}
+		} else if ht.Employees[index].Name == name {
+			return index, i + 1
+		}
+	}
+	if deletedIndex >= 0 {
+		return deletedIndex, ht.Capacity
 	}
 	return -1, ht.Capacity
 }
@@ -53,13 +72,12 @@ func (ht *LinearProbingHashTable) Set(name string, phone string) error {
 	if index < 0 {
 		return fmt.Errorf("key is not in table")
 	}
-	if ht.Employees[index] == nil {
+	if ht.Employees[index] == nil || ht.Employees[index].Deleted {
 		ht.Employees[index] = &Employee{
 			Name:  name,
 			Phone: phone,
 		}
 	} else {
-		ht.Employees[index].Name = name
 		ht.Employees[index].Phone = phone
 	}
 	return nil
@@ -67,7 +85,9 @@ func (ht *LinearProbingHashTable) Set(name string, phone string) error {
 
 func (ht *LinearProbingHashTable) Get(name string) string {
 	index, _ := ht.Find(name)
-	if index < 0 || ht.Employees[index] == nil {
+	if index < 0 ||
+		ht.Employees[index] == nil ||
+		ht.Employees[index].Deleted {
 		return ""
 	}
 	return ht.Employees[index].Phone
@@ -75,10 +95,21 @@ func (ht *LinearProbingHashTable) Get(name string) string {
 
 func (ht *LinearProbingHashTable) Contains(name string) bool {
 	index, _ := ht.Find(name)
-	if index < 0 || ht.Employees[index] == nil {
+	if index < 0 ||
+		ht.Employees[index] == nil ||
+		ht.Employees[index].Deleted {
 		return false
 	}
-	return true
+	return ht.Employees[index].Name == name
+}
+
+func (ht *LinearProbingHashTable) Delete(name string) {
+	index, _ := ht.Find(name)
+	if index >= 0 &&
+		ht.Employees[index] != nil &&
+		!ht.Employees[index].Deleted {
+		ht.Employees[index].Deleted = true
+	}
 }
 
 func (ht *LinearProbingHashTable) DumpConise() {
@@ -106,4 +137,43 @@ func (ht *LinearProbingHashTable) AveProbeSequenceLength() float32 {
 		}
 	}
 	return float32(totalLength) / float32(numValues)
+}
+
+func (ht *LinearProbingHashTable) Probe(name string) int {
+	hash := ht.Hash(name) % ht.Capacity
+	fmt.Printf("Probing %s (%d)\n", name, hash)
+	deletedItem := -1
+	for i := 0; i < ht.Capacity; i++ {
+		index := (hash + i) % ht.Capacity
+		fmt.Printf("\t%d: ", index)
+		if ht.Employees[index] == nil {
+			fmt.Printf("---\n")
+		} else if ht.Employees[index].Deleted {
+			fmt.Printf("xxx\n")
+		} else {
+			fmt.Printf("%s\n", ht.Employees[index].Name)
+		}
+		if ht.Employees[index] == nil {
+			if deletedItem >= 0 {
+				fmt.Printf("\tReturning deleted index %d\n", deletedItem)
+				return deletedItem
+			}
+			fmt.Printf("\tReturning nil index %d\n", index)
+			return index
+		}
+		if ht.Employees[index].Deleted {
+			if deletedItem < 0 {
+				deletedItem = index
+			}
+		} else if ht.Employees[index].Name == name {
+			fmt.Printf("\tReturn found index %d\n", index)
+			return index
+		}
+	}
+	if deletedItem >= 0 {
+		fmt.Printf("\tReturning deleted index %d\n", deletedItem)
+		return deletedItem
+	}
+	fmt.Printf("\tTable is full\n")
+	return -1
 }

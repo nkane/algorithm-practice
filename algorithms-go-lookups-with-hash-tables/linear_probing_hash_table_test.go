@@ -11,25 +11,58 @@ import (
 
 func TestLinearProbingHashTable(t *testing.T) {
 	employees := []Employee{
-		{"Ann Archer", "202-555-0101"},
-		{"Bob Baker", "202-555-0102"},
-		{"Cindy Cant", "202-555-0103"},
-		{"Dan Deever", "202-555-0104"},
-		{"Edwina Eager", "202-555-0105"},
-		{"Fred Franklin", "202-555-0106"},
-		{"Gina Gable", "202-555-0107"},
+		{"Ann Archer", "202-555-0101", false},
+		{"Bob Baker", "202-555-0102", false},
+		{"Cindy Cant", "202-555-0103", false},
+		{"Dan Deever", "202-555-0104", false},
+		{"Edwina Eager", "202-555-0105", false},
+		{"Fred Franklin", "202-555-0106", false},
+		{"Gina Gable", "202-555-0107", false},
+	}
+	ht := NewLinearProbingHashTable(10)
+	for _, e := range employees {
+		ht.Set(e.Name, e.Phone)
+	}
+
+	ht.Dump()
+	assert.Assert(t, ht.Contains("Sally Owens") == false)
+	assert.Assert(t, ht.Contains("Dan Deever") == true)
+	ht.Delete("Dan Deever")
+	assert.Assert(t, ht.Contains("Dan Deever") == false)
+
+	assert.Assert(t, ht.Get("Fred Franklin") == "202-555-0106")
+	ht.Set("Fred Franklin", "202-555-0100")
+	assert.Assert(t, ht.Get("Fred Franklin") == "202-555-0100")
+	ht.Dump()
+}
+
+func TestLinearProbingHashTable_Probe(t *testing.T) {
+	employees := []Employee{
+		{"Ann Archer", "202-555-0101", false},
+		{"Bob Baker", "202-555-0102", false},
+		{"Cindy Cant", "202-555-0103", false},
+		{"Dan Deever", "202-555-0104", false},
+		{"Edwina Eager", "202-555-0105", false},
+		{"Fred Franklin", "202-555-0106", false},
+		{"Gina Gable", "202-555-0107", false},
 	}
 	ht := NewLinearProbingHashTable(10)
 	for _, e := range employees {
 		ht.Set(e.Name, e.Phone)
 	}
 	ht.Dump()
-	assert.Assert(t, ht.Contains("Sally Owens") == false)
-	assert.Assert(t, ht.Contains("Dan Deever") == true)
-	assert.Assert(t, ht.Get("Fred Franklin") == "202-555-0106")
-	ht.Set("Fred Franklin", "202-555-0100")
-	assert.Assert(t, ht.Get("Fred Franklin") == "202-555-0100")
+	ht.Probe("Hank Hardy")
+	ht.Probe("Ann Archer")
+	ht.Probe("Cindy Cant")
+	ht.Probe("Dan Deever")
+	ht.Probe("Edwina Eagar")
+	ht.Probe("Fred Franklin")
+	ht.Probe("Gina Gable")
+	ht.Set("Hank Hardy", "202-555-0108")
+	ht.Probe("Hank Hardy")
+}
 
+func TestLinearProbingHashTable_Big(t *testing.T) {
 	fmt.Println(time.Now())                   // Print the time so it will compile if we use a fixed seed.
 	random := rand.New(rand.NewSource(12345)) // Initialize with a fixed seed
 	bigCapacity := 1009
