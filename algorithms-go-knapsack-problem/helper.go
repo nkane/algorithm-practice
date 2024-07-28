@@ -17,6 +17,9 @@ const (
 var allowedWeight int
 
 type Item struct {
+	ID         int
+	BlockedBy  int
+	BlockList  []int
 	Value      int
 	Weight     int
 	IsSelected bool
@@ -27,12 +30,44 @@ func MakeItems(numItems int, minValue int, maxValue int, minWeight int, maxWeigh
 	items := make([]Item, numItems)
 	for i := 0; i < numItems; i++ {
 		items[i] = Item{
+			ID:         i,
+			BlockedBy:  -1,
+			BlockList:  nil,
 			Value:      random.Intn(maxValue-minValue+1) + minValue,
 			Weight:     random.Intn(maxWeight-minWeight+1) + minWeight,
 			IsSelected: false,
 		}
 	}
 	return items
+}
+
+func MakeBlockLists(items []Item) {
+	for i := range items {
+		items[i].BlockList = []int{}
+		for j := range items {
+			if i != j {
+				if items[i].Value >= items[j].Value && items[i].Weight <= items[j].Weight {
+					items[i].BlockList = append(items[i].BlockList, items[j].ID)
+				}
+			}
+		}
+	}
+}
+
+func BlockItems(source Item, items []Item) {
+	for _, otherID := range source.BlockList {
+		if items[otherID].BlockedBy < 0 {
+			items[otherID].BlockedBy = source.ID
+		}
+	}
+}
+
+func UnblockedItems(source Item, items []Item) {
+	for _, otherID := range source.BlockList {
+		if items[otherID].BlockedBy == source.ID {
+			items[otherID].BlockedBy = -1
+		}
+	}
 }
 
 func CopyItems(items []Item) []Item {

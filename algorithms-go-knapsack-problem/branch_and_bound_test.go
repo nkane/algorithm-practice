@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestExhaustiveSearch(t *testing.T) {
+func TestBranchAndBound(t *testing.T) {
 	items := MakeItems(5, minValue, maxValue, minWeight, maxWeight)
 	allowedWeight := SumWeights(items, true)
 	fmt.Println("*** Parameters ***")
@@ -14,7 +14,7 @@ func TestExhaustiveSearch(t *testing.T) {
 	fmt.Printf("Total weight: %d\n", SumWeights(items, true))
 	fmt.Printf("Allowed weight: %d\n", allowedWeight)
 	fmt.Println()
-	fmt.Println("*** Exhaustive Search ***")
-	got := RunAlgorithm(ExhaustiveSearch, items, allowedWeight)
+	fmt.Println("*** Branch and Bound ***")
+	got := RunAlgorithm(BranchAndBound, items, allowedWeight)
 	fmt.Print(got)
 }
